@@ -246,6 +246,7 @@ module.exports = {
     // GNFC POC
     msgStakeholderExisted: "Stakeholder existed with email",
     msgStakeholderNotApproved: "Stakeholder Not approved",
+    msgLeaserNotFound: "No matching (Leaser) results found",
     msgStakeholderNotfound: "Stakeholder email / role Not found",
     msgSignupSuccessful: "Stakeholder Signup successfully",
     msgApprovedSuccessful: "Stakeholder Approved successfully",
@@ -255,4 +256,6 @@ module.exports = {
     msgLoginUnsuccessful: "",
     msgOrderSuccessful: "",
     msgOrderUnsuccessful: "",
+    msgUserApprovedSuccess: "Stakeholder Approved successfully",
+    msgUserApprovedAlready: "Stakeholder Approved already",
 };
