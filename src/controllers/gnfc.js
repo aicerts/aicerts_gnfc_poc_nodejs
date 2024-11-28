@@ -3,6 +3,7 @@ require('dotenv').config();
 
 // Import bcrypt for hashing passwords
 const bcrypt = require("bcrypt");
+const QRCode = require("qrcode");
 
 // Import custom authUtils module for JWT token generation
 const { generateJwtToken } = require("../common/authUtils");
@@ -18,6 +19,8 @@ const leaser_role = process.env.POC_LEASER_ROLE;
 const distributor_role = process.env.POC_DISTRIBUTOR_ROLE;
 const stockist_role = process.env.POC_STOCKIST_ROLE;
 
+const defaultLeaser = process.env.DEFAULT_LEASER;
+
 const existedRoles = [
   'Leaser',
   'Distributor',
@@ -26,7 +29,7 @@ const existedRoles = [
 ]
 
 // Import MongoDB models
-const { Admin, Stakeholders, Leaser } = require("../config/schema");
+const { Admin, Stakeholders, Leaser, RoyaltyPass, DeliveryChallan } = require("../config/schema");
 
 const { validationResult } = require("express-validator");
 
@@ -35,9 +38,13 @@ var messageCode = require("../common/codes");
 // Importing functions from a custom module
 const {
   isDBConnected, // Function to check if the database connection is established
+  calculateHash,
   connectToPolygonPoc,
   generateAccount,
 } = require('../model/tasks'); // Importing functions from the '../model/tasks' module
+
+// Import custom cryptoFunction module for encryption and decryption
+const { generateEncryptedUrl } = require("../common/cryptoFunction");
 
 /**
  * API call for User Signup.
@@ -143,13 +150,13 @@ const login = async (req, res) => {
     });
   }
 
-  if (userExist.status != 'approved') {
-    return res.json({
-      code: 400,
-      status: "FAILED",
-      message: messageCode.msgStakeholderNotApproved,
-    });
-  }
+  // if (userExist.status != 'approved') {
+  //   return res.json({
+  //     code: 400,
+  //     status: "FAILED",
+  //     message: messageCode.msgStakeholderNotApproved,
+  //   });
+  // }
 
   // Finding user by email
   Stakeholders.find({ email })
@@ -180,7 +187,9 @@ const login = async (req, res) => {
                   JWTToken: JWTToken,
                   userId: data[0]?.userId,
                   name: data[0]?.name,
-                  email: data[0]?.email
+                  email: data[0]?.email,
+                  role: data[0]?.role,
+                  roleId: data[0]?.roleId
                 }
               });
             } else {
@@ -306,7 +315,7 @@ const approveLeaser = async (req, res) => {
       });
     }
 
-    if(isUserExist.status == 'approved'){
+    if (isUserExist.status == 'approved') {
       return res.json({
         code: 400,
         status: 'FAILED',
@@ -401,6 +410,318 @@ const createLeaser = async (req, res) => {
  */
 const issueRoyaltyPass = async (req, res) => {
 
+  const reqData = req?.body;
+  try {
+    await isDBConnected();
+    if (reqData.email) {
+      const isLeaserExist = await Stakeholders.findOne({ email: reqData.email, roleId: reqData.leaserId });
+      if (!isLeaserExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgStakeholderNotApproved,
+          details: reqData?.email
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgStakeholderNotfound,
+        details: reqData?.email
+      });
+    }
+
+    if (reqData?.royaltyPassNo) {
+      const isRoyaltyPassExist = await RoyaltyPass.findOne({ royaltyPassNo: reqData?.royaltyPassNo });
+      if (isRoyaltyPassExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgRoyaltyPassExisted,
+          details: reqData?.royaltyPassNo
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.royaltyPassNo
+      });
+    }
+    const fields = {
+      royaltyPassNo: reqData?.royaltyPassNo,
+      leaserId: reqData?.leaserId,
+      issuedDate: reqData?.issuedDate,
+      leaseValidUpto: reqData?.leaseValidUpto,
+      SSPNumber: reqData?.SSPNumber,
+      village: reqData?.village,
+      taluke: reqData?.taluke,
+      district: reqData?.district,
+      mineralName: reqData?.mineralName,
+      mineralGrade: reqData?.mineralGrade,
+      initialQuantatity: reqData?.initialQuantatity,
+      journeyStartDate: reqData?.journeyStartDate,
+      journeyEndDate: reqData?.journeyEndDate,
+      distance: reqData?.distance,
+      duration: reqData?.duration,
+      driverName: reqData?.driverName,
+      driverLiceneceNo: reqData?.driverLiceneceNo,
+      driverMobileNumber: reqData?.driverMobileNumber,
+      vehicleType: reqData?.vehicleType,
+      vehicleNumber: reqData?.vehicleNumber,
+      weightBridgeName: reqData?.weightBridgeName,
+      destinaton: reqData?.destinaton,
+      address: reqData?.address,
+    };
+
+    // Hash sensitive fields
+    const hashedFields = {};
+    let count = 0;
+
+    for (const field in fields) {
+      if (count >= 5) break; // Stop after 5 fields
+      hashedFields[field] = calculateHash(fields[field]);
+      count++;
+    }
+    const combinedHash = calculateHash(JSON.stringify(hashedFields));
+    const viewEvantRange = 5;
+
+    // Normalize values in fields object
+    const normalizedFields = Object.fromEntries(
+      Object.entries(fields).map(([key, value]) => [key, value === undefined ? "undefined" : String(value)])
+    );
+    // Split into keys and values
+    const keys = Object.keys(normalizedFields);
+    const values = Object.values(normalizedFields);
+
+    console.log("The response", fields, keys, values);
+
+    try {
+      var { txHash, txFee } = await issueRoyaltyPassWithRetry(
+        fields.royaltyPassNo,
+        defaultLeaser,
+        keys,
+        values,
+        combinedHash,
+        viewEvantRange
+      );
+      // var polygonLink = `https://${process.env.NETWORK}/tx/${txHash}`;
+      if (!txHash) {
+        return {
+          code: 400,
+          status: false,
+          message: messageCode.msgFailedToIssueAfterRetry,
+          details: fields.royaltyPassNo,
+        };
+      }
+
+      // var txHash = "hash-transaction";
+
+
+      var modifiedUrl = process.env.POC_SHORT_URL + fields.royaltyPassNo;
+
+      var qrCodeImage = await QRCode.toDataURL(modifiedUrl, {
+        errorCorrectionLevel: "H",
+        width: 450, // Adjust the width as needed
+        height: 450, // Adjust the height as needed
+      });
+
+      // Generate encrypted URL with certificate data
+      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage };
+
+      const storeData = await insertRoyaltyPassData(dataWithQRTransaction);
+
+
+      if (storeData) {
+        return res.status(200).json({
+          code: 200,
+          status: "SUCCESS",
+          message: messageCode.msgRoyaltyIssueSuccess,
+          details: storeData
+        });
+      } else {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgRoyaltyIssueUnsuccess,
+          details: reqData?.royaltyPassNo
+        });
+      }
+
+    } catch (error) {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.royaltyPassNo
+      });
+    }
+
+
+  } catch (error) {
+    // Handle any errors that occur during token verification or validation
+    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+  }
+};
+
+/**
+ * API call for Issue Delivery Challan.
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+const issueDeliveryChallan = async (req, res) => {
+  const reqData = req?.body;
+  try {
+    await isDBConnected();
+    if (reqData.email) {
+      const isIssuerExist = await Stakeholders.findOne({ email: reqData.email });
+      if (!isIssuerExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgStakeholderNotApproved,
+          details: reqData?.email
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgStakeholderNotfound,
+        details: reqData?.email
+      });
+    }
+    if (reqData?.deliveryNo) {
+      const isDeliveryChallanExist = await DeliveryChallan.findOne({ deliveryNo: reqData?.deliveryNo });
+      if (isDeliveryChallanExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgDeliveryChallansExisted,
+          details: reqData?.email
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.deliveryNo
+      });
+    }
+
+    const fields = {
+      deliveryNo: reqData?.deliveryNo,
+      royaltyPassNo: reqData?.royaltyPassNo,
+      SSPNumber: reqData?.SSPNumber,
+      surveyNo: reqData?.surveyNo,
+      buyerId: reqData?.buyerId, // Stackholder userId who is Stockist
+      buyerName: reqData?.buyerName,
+      buyerAddress: reqData?.buyerAddress,
+      initialQuantatity: reqData?.initialQuantatity,
+      village: reqData?.village,
+      taluke: reqData?.taluke,
+      district: reqData?.district,
+      pincode: reqData?.pincode,
+      transportationMode: reqData?.transportationMode,
+      transportationDistance: reqData?.transportationDistance,
+      journeyStartDate: reqData?.journeyStartDate,
+      journeyEndDate: reqData?.journeyEndDate,
+      driverName: reqData?.driverName,
+      driverLiceneceNo: reqData?.driverLiceneceNo,
+      vehicleType: reqData?.vehicleType,
+      vehicleNumber: reqData?.vehicleNumber
+    };
+
+
+    // Hash sensitive fields
+    var hashedFields = {};
+    let count = 0;
+    for (const field in fields) {
+      if (count >= 5) break; // Stop after 5 fields
+      hashedFields[field] = calculateHash(fields[field]);
+      count++;
+    }
+    const combinedHash = calculateHash(JSON.stringify(hashedFields));
+    const viewEvantRange = 5;
+
+    // Normalize values in fields object
+    const normalizedFields = Object.fromEntries(
+      Object.entries(fields).map(([key, value]) => [key, value === undefined ? "undefined" : String(value)])
+    );
+    // Split into keys and values
+    const keys = Object.keys(normalizedFields);
+    const values = Object.values(normalizedFields);
+
+    console.log("The response", fields, keys, values);
+
+    try {
+      // var { txHash, txFee } = await issueDeliveryChallanWithRetry(
+      //   fields.deliveryNo,
+      //   fields.buyerId,
+      //   keys,
+      //   values,
+      //   combinedHash,
+      //   viewEvantRange
+      // );
+      // // var polygonLink = `https://${process.env.NETWORK}/tx/${txHash}`;
+      // if (!txHash) {
+      //   return {
+      //     code: 400,
+      //     status: false,
+      //     message: messageCode.msgFailedToIssueAfterRetry,
+      //     details: fields.deliveryNo,
+      //   };
+      // }
+
+      var txHash = "hash-transaction";
+
+      var modifiedUrl = process.env.POC_SHORT_URL + fields.deliveryNo;
+
+      var qrCodeImage = await QRCode.toDataURL(modifiedUrl, {
+        errorCorrectionLevel: "H",
+        width: 450, // Adjust the width as needed
+        height: 450, // Adjust the height as needed
+      });
+
+      // Generate encrypted URL with certificate data
+      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage };
+
+      const storeData = await insertDeliveryChallanData(dataWithQRTransaction);
+
+      if (storeData) {
+        return res.status(200).json({
+          code: 200,
+          status: "SUCCESS",
+          message: messageCode.msgDeliveryChallanSuccess,
+          details: storeData
+        });
+      } else {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgDeliveryChallanUnsuccess,
+          details: reqData?.royaltyPassNo
+        });
+      }
+
+    } catch (error) {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.royaltyPassNo
+      });
+    }
+
+
+  } catch (error) {
+    // Handle any errors that occur during token verification or validation
+    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+  }
 };
 
 
@@ -520,18 +841,20 @@ const issueRoyaltyPassWithRetry = async (royaltyPassId, leaserId, keys, values, 
   if (!newContract) {
     return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
   }
+  console.log("Contract inputs", newContract, royaltyPassId, leaserId, keys, values, hash, viewRange);
   try {
     // Issue Single Certifications on Blockchain
     const tx = await newContract.createRoyaltyPass(
-      royaltyPassId, 
-      leaserId, 
-      keys, 
-      values, 
+      royaltyPassId,
+      leaserId,
+      keys,
+      values,
       hash,
       viewRange
     );
 
     let txHash = tx.hash;
+    let txFee = null;
     //   let txFee = await fetchOrEstimateTransactionFee(tx);
     if (!txHash) {
       if (retryCount > 0) {
@@ -588,18 +911,20 @@ const issueDeliveryChallanWithRetry = async (deliveryChallanId, stockistId, keys
   if (!newContract) {
     return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
   }
+  console.log("Contract inputs", newContract, deliveryChallanId, stockistId, keys, values, hash, viewRange);
   try {
     // Issue Single Certifications on Blockchain
     const tx = await newContract.createDeliveryChallan(
-      deliveryChallanId, 
-      stockistId, 
-      keys, 
-      values, 
+      deliveryChallanId,
+      stockistId,
+      keys,
+      values,
       hash,
       viewRange
     );
 
     let txHash = tx.hash;
+    let txFee = null;
     //   let txFee = await fetchOrEstimateTransactionFee(tx);
     if (!txHash) {
       if (retryCount > 0) {
@@ -651,6 +976,92 @@ const issueDeliveryChallanWithRetry = async (deliveryChallanId, stockistId, keys
   }
 };
 
+
+const insertRoyaltyPassData = async (data) => {
+  if (!data) {
+    return false;
+  }
+  try {
+    // Create a new Issues document with the provided data
+    const newRoyaltyPass = new RoyaltyPass({
+      royaltyPassNo: data?.royaltyPassNo,
+      leaserId: data?.leaserId,
+      issuedDate: data?.issuedDate,
+      leaseValidUpto: data?.leaseValidUpto,
+      SSPNumber: data?.SSPNumber,
+      village: data?.village,
+      taluke: data?.taluke,
+      district: data?.district,
+      mineralName: data?.mineralName,
+      mineralGrade: data?.mineralGrade,
+      initialQuantatity: data?.initialQuantatity,
+      journeyStartDate: data?.journeyStartDate,
+      journeyEndDate: data?.journeyEndDate,
+      distance: data?.distance,
+      duration: data?.duration,
+      driverName: data?.driverName,
+      driverLiceneceNo: data?.driverLiceneceNo,
+      driverMobileNumber: data?.driverMobileNumber,
+      vehicleType: data?.vehicleType,
+      vehicleNumber: data?.vehicleNumber,
+      weightBridgeName: data?.weightBridgeName,
+      destinaton: data?.destinaton,
+      address: data?.address,
+      transactionHash: data?.transactionHash,
+      qrData: data?.qrData
+    });
+    // Save the new Issues document to the database
+    const result = await newRoyaltyPass.save();
+    return result;
+  } catch (error) {
+    // Handle errors related to database connection or insertion
+    console.error("Error connecting to MongoDB:", error);
+    return false;
+  }
+};
+
+const insertDeliveryChallanData = async (data) => {
+  if (!data) {
+    return false;
+  }
+  try {
+    // Create a new Issues document with the provided data
+    const newDeliveryChallan = new DeliveryChallan({
+      deliveryNo: data?.deliveryNo,
+      royaltyPassNo: data?.royaltyPassNo,
+      SSPNumber: data?.SSPNumber,
+      surveyNo: data?.surveyNo,
+      buyerId: data?.buyerId,
+      buyerName: data?.buyerName,
+      buyerAddress: data?.buyerAddress,
+      initialQuantatity: data?.initialQuantatity,
+      village: data?.village,
+      taluke: data?.taluke,
+      district: data?.district,
+      pincode: data?.pincode,
+      transportationMode: data?.transportationMode,
+      transportationDistance: data?.transportationDistance,
+      journeyStartDate: data?.journeyStartDate,
+      journeyEndDate: data?.journeyEndDate,
+      driverName: data?.driverName,
+      driverLiceneceNo: data?.driverLiceneceNo,
+      vehicleType: data?.vehicleType,
+      vehicleNumber: data?.vehicleNumber,
+      transactionHash: data?.transactionHash,
+      url: data?.url || '',
+      qrData: data?.qrData
+    });
+    // Save the new Issues document to the database
+    const result = await newDeliveryChallan.save();
+    return true;
+  } catch (error) {
+    // Handle errors related to database connection or insertion
+    console.error("Error connecting to MongoDB:", error);
+    return false;
+  }
+
+};
+
 module.exports = {
   login,
 
@@ -658,9 +1069,7 @@ module.exports = {
 
   logout,
 
-  approveLeaser,
+  issueRoyaltyPass,
 
-  createLeaser,
-
-  issueRoyaltyPass
+  issueDeliveryChallan
 }

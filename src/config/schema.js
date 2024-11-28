@@ -271,7 +271,7 @@ const RoyaltyPassSchema = new mongoose.Schema({
   destinaton: { type: String },
   address: { type: String },
   transactionHash: { type: String },
-  url: { type: String },
+  url: { type: String, default: ""},
   qrData: { type: String }
 });
 
@@ -298,7 +298,7 @@ const DeliveryChallanSchema = new mongoose.Schema({
   vehicleType: { type: String },
   vehicleNumber: { type: String },
   transactionHash: { type: String },
-  url: { type: String },
+  url: { type: String, default: ""},
   qrData: { type: String }
 });
 

@@ -281,5 +281,318 @@ router.post('/user-signup', validationRoute.signUp, gnfcController.signup);
 
 router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
 
+/**
+ * @swagger
+ * /api/issue-royalty-pass:
+ *   post:
+ *     summary: Create a new Royalty pass
+ *     description: API to Create a new Royalty pass
+ *     tags: [GNFC POC]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Enter valid User email
+ *               royaltyPassNo:
+ *                 type: string
+ *                 description: Enter valid royaltyPassNo
+ *               leaserId:
+ *                 type: string
+ *                 description: Enter valid leaserId
+ *               issuedDate:
+ *                 type: string
+ *                 description: Enter valid issued Date
+ *               leaseValidUpto:
+ *                 type: string
+ *                 description: Enter valid leaseValidUpto
+ *               SSPNumber:
+ *                 type: string
+ *                 description: Enter valid SSPNumber
+ *               village:
+ *                 type: string
+ *                 description: Enter valid village
+ *               taluke:
+ *                 type: string
+ *                 description: Enter valid taluke
+ *               district:
+ *                 type: string
+ *                 description: Enter valid district
+ *               mineralName:
+ *                 type: string
+ *                 description: Enter valid mineralName
+ *               mineralGrade:
+ *                 type: string
+ *                 description: Enter valid mineralGrade
+ *               initialQuantatity:
+ *                 type: number
+ *                 description: Enter valid initialQuantatity
+ *               journeyStartDate:
+ *                 type: string
+ *                 description: Enter valid journeyStartDate
+ *               journeyEndDate:
+ *                 type: string
+ *                 description: Enter valid journeyEndDate
+ *               distance:
+ *                 type: string
+ *                 description: Enter valid distance
+ *               duration:
+ *                 type: string
+ *                 description: Enter valid duration
+ *               driverName:
+ *                 type: string
+ *                 description: Enter valid driverName
+ *               driverLiceneceNo:
+ *                 type: string
+ *                 description: Enter valid driverLiceneceNo
+ *               driverMobileNumber:
+ *                 type: string
+ *                 description: Enter valid driverMobileNumber
+ *               vehicleType:
+ *                 type: string
+ *                 description: Enter valid vehicleType
+ *               vehicleNumber:
+ *                 type: string
+ *                 description: Enter valid vehicleNumber
+ *               weightBridgeName:
+ *                 type: string
+ *                 description: Enter valid weightBridgeName
+ *               destinaton:
+ *                 type: string
+ *                 description: Enter valid destinaton
+ *               address:
+ *                 type: string
+ *                 description: Enter valid address
+ *             required:
+ *               - email
+ *               - royaltyPassNo
+ *               - leaserId
+ *               - issuedDate
+ *               - leaseValidUpto
+ *               - SSPNumber
+ *               - village
+ *               - taluke
+ *               - district
+ *               - mineralName
+ *               - mineralGrade
+ *               - initialQuantatity
+ *               - journeyStartDate
+ *               - journeyEndDate
+ *               - distance
+ *               - duration
+ *               - driverName
+ *               - driverLiceneceNo
+ *               - driverMobileNumber
+ *               - vehicleType
+ *               - vehicleNumber
+ *               - weightBridgeName
+ *               - destinaton
+ *               - address
+ *     responses:
+ *       '200':
+ *         description: Successful Royalty pass issuance
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 qrCodeImage:
+ *                   type: string
+ *                 polygonLink:
+ *                   type: string
+ *                 details:
+ *                   type: object
+ *             example:
+ *               code: 200.
+ *               message: Royalty pass issued successfully.
+ *               qrCodeImage: Base64-encoded QR code image.
+ *               polygonLink: Link to the transaction on the Polygon network.
+ *               details: Royalty pass details.
+ *       '400':
+ *         description: Bad request or empty input fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: FAILED
+ *                 message:
+ *                   type: string
+ *                   example: Empty input fields! or Invalid inputs!
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: FAILED
+ *                 message:
+ *                   type: string
+ *                   example: An error occurred
+ */
+
+router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueRoyaltyPass);
+
+/**
+ * @swagger
+ * /api/issue-delivery-challan:
+ *   post:
+ *     summary: Create a new Delivery Challan
+ *     description: API to Create a new Delivery Challan
+ *     tags: [GNFC POC]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Enter valid User email
+ *               deliveryNo:
+ *                 type: string
+ *                 description: Enter valid deliveryNo
+ *               royaltyPassNo:
+ *                 type: string
+ *                 description: Enter valid royaltyPassNo
+ *               SSPNumber:
+ *                 type: string
+ *                 description: Enter valid SSPNumber
+ *               surveyNo:
+ *                 type: string
+ *                 description: Enter valid surveyNo
+ *               buyerId:
+ *                 type: string
+ *                 description: Enter valid buyerId
+ *               buyerName:
+ *                 type: string
+ *                 description: Enter valid buyerName
+ *               buyerAddress:
+ *                 type: string
+ *                 description: Enter valid buyerAddress
+ *               initialQuantatity:
+ *                 type: number
+ *                 description: Enter valid initialQuantatity
+ *               village:
+ *                 type: string
+ *                 description: Enter valid village
+ *               taluke:
+ *                 type: string
+ *                 description: Enter valid taluke
+ *               district:
+ *                 type: string
+ *                 description: Enter valid district
+ *               pincode:
+ *                 type: number
+ *                 description: Enter valid pincode
+ *               transportationMode:
+ *                 type: string
+ *                 description: Enter valid transportationMode
+ *               transportationDistance:
+ *                 type: string
+ *                 description: Enter valid transportationDistance
+ *               journeyStartDate:
+ *                 type: string
+ *                 description: Enter valid journeyStartDate
+ *               journeyEndDate:
+ *                 type: string
+ *                 description: Enter valid journeyEndDate
+ *               driverName:
+ *                 type: string
+ *                 description: Enter valid driverName
+ *               driverLiceneceNo:
+ *                 type: string
+ *                 description: Enter valid driverLiceneceNo
+ *               vehicleType:
+ *                 type: string
+ *                 description: Enter valid vehicleType
+ *               vehicleNumber:
+ *                 type: string
+ *                 description: Enter valid vehicleNumber
+ *             required:
+ *               - email
+ *               - deliveryNo
+ *               - royaltyPassNo
+ *               - SSPNumber
+ *               - surveyNo
+ *               - buyerId
+ *               - buyerName
+ *               - buyerAddress
+ *               - initialQuantatity
+ *               - village
+ *               - taluke
+ *               - district
+ *               - pincode
+ *               - transportationMode
+ *               - transportationDistance
+ *               - journeyStartDate
+ *               - journeyEndDate
+ *               - driverName
+ *               - driverLiceneceNo
+ *               - vehicleType
+ *               - vehicleNumber
+ *     responses:
+ *       '200':
+ *         description: Successful Delivery Challan issuance
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 qrCodeImage:
+ *                   type: string
+ *                 polygonLink:
+ *                   type: string
+ *                 details:
+ *                   type: object
+ *             example:
+ *               code: 200.
+ *               message: Delivery Challan issued successfully.
+ *               qrCodeImage: Base64-encoded QR code image.
+ *               polygonLink: Link to the transaction on the Polygon network.
+ *               details: Delivery Challan details.
+ *       '400':
+ *         description: Bad request or empty input fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: FAILED
+ *                 message:
+ *                   type: string
+ *                   example: Empty input fields! or Invalid inputs!
+ *       '500':
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: FAILED
+ *                 message:
+ *                   type: string
+ *                   example: An error occurred
+ */
+
+router.post('/issue-delivery-challan', validationRoute.signUp, gnfcController.issueDeliveryChallan);
 
 module.exports=router;

@@ -244,8 +244,10 @@ module.exports = {
     msgBadgeNotDeleted: "Unable to delete the badge, Please try again with valid details...",
 
     // GNFC POC
-    msgStakeholderExisted: "Stakeholder existed with email",
-    msgStakeholderNotApproved: "Stakeholder Not approved",
+    msgStakeholderExisted: "Stakeholder existed with email / role",
+    msgRoyaltyPassExisted: "Provided royalty pass already existed, Please check and try again",
+    msgDeliveryChallansExisted: "Provided Delivery challan already existed, Please check and try again",
+    msgStakeholderNotApproved: "Stakeholder Not found",
     msgLeaserNotFound: "No matching (Leaser) results found",
     msgStakeholderNotfound: "Stakeholder email / role Not found",
     msgSignupSuccessful: "Stakeholder Signup successfully",
@@ -258,4 +260,8 @@ module.exports = {
     msgOrderUnsuccessful: "",
     msgUserApprovedSuccess: "Stakeholder Approved successfully",
     msgUserApprovedAlready: "Stakeholder Approved already",
+    msgRoyaltyIssueSuccess: "Royalty pass issued successfully",
+    msgRoyaltyIssueUnsuccess: "Unable to issue Royalty pass, Plese check details and try again",
+    msgDeliveryChallanSuccess: "Delivery challan issued successfully",
+    msgDeliveryChallanUnsuccess: "Unable to issue Delivery challan, Plese check details and try again",
 };
