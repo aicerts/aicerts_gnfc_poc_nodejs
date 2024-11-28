@@ -8,7 +8,7 @@ let fetch = require("./fetch");
 let features = require("./features");
 let blockchain = require("./blockchain");
 let gnfc = require("./gnfc");
-let gnfc = require("./gnfcFetch");
+let gnfcFetch = require("./gnfcFetch");
 let health = require("./health");
 
 
