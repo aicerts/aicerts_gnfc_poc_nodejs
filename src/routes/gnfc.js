@@ -665,7 +665,7 @@ router.post('/poc-verify-id', gnfcController.verifyPocByID);
  * @swagger
  * /api/poc-verify-url:
  *   post:
- *     summary: Verify provided ID
+ *     summary: Verify provided ID (Ex: https://gnfcissue.aicerts.io?=2101)
  *     description: API call for verify Royalty pass url / Delivery challan url
  *     tags: [GNFC POC]
  *     requestBody:
