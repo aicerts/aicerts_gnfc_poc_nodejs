@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const gnfcController = require('../controllers/gnfcFetch');
-const auth = require('../config/auth');
+const { ensureAuthenticated } = require('../config/auth');
 
 /**
  * @swagger
@@ -55,7 +55,7 @@ const auth = require('../config/auth');
  *                   description: Result message (An error occurred during logout).
  */
 
-router.get('/leaser', gnfcController.leaserList);
+router.get('/leaser', ensureAuthenticated, gnfcController.leaserList);
 
 /**
  * @swagger
@@ -110,14 +110,24 @@ router.get('/leaser', gnfcController.leaserList);
  */
 
 // Royalty pass list based on lease id
-router.get('/royalty-pass/:leaserId', gnfcController.royaltyPassList);
+router.get(
+  '/royalty-pass/:leaserId',
+  ensureAuthenticated,
+  gnfcController.royaltyPassList
+);
 
-// Royalty pass list based on royalty pass
+// Delivery challan list based on royalty pass
 router.get(
   '/delivery-challan/:royaltyPassNo',
+  ensureAuthenticated,
   gnfcController.deliveryChallanList
 );
 
-router.get('/whole-record/:deliveryChallan', gnfcController.wholeTracker);
+// Whole track record based on delivery challan
+router.get(
+  '/whole-record/:deliveryChallan',
+  ensureAuthenticated,
+  gnfcController.wholeTracker
+);
 
 module.exports = router;
