@@ -529,7 +529,7 @@ const issueRoyaltyPass = async (req, res) => {
       });
 
       // Generate encrypted URL with certificate data
-      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage };
+      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url: modifiedUrl };
 
       const storeData = await insertRoyaltyPassData(dataWithQRTransaction);
 
@@ -688,7 +688,7 @@ const issueDeliveryChallan = async (req, res) => {
       });
 
       // Generate encrypted URL with certificate data
-      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage };
+      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url : modifiedUrl };
 
       const storeData = await insertDeliveryChallanData(dataWithQRTransaction);
 
@@ -717,6 +717,98 @@ const issueDeliveryChallan = async (req, res) => {
       });
     }
 
+
+  } catch (error) {
+    // Handle any errors that occur during token verification or validation
+    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+  }
+};
+
+/**
+ * API call for verify Royalty pass ID / Delivery challan ID
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+const verifyPocByID = async (req, res) => {
+  const requestId = req.body.id;
+  if(!requestId){
+    return res.status(400).json({
+      code: 400,
+      status: "FAILED",
+      message: messageCode.msgInvalidInput
+    });
+  }
+  try{
+    const isIdExist = await isGnfcIdExist(requestId);
+    if(isIdExist === false) {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgNoMatchFound,
+        details: requestId
+      });
+    } else {
+      return res.status(200).json({
+        code: 200,
+        status: "SUCCESS",
+        message: messageCode.msgMatchResultsFound,
+        details: isIdExist
+      });
+    }
+  } catch (error) {
+    // Handle any errors that occur during token verification or validation
+    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+  }
+};
+
+/**
+ * API call for verify Royalty pass Url / Delivery challan Url
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+const verifyPocByIUrl = async (req, res) => {
+  const requestUrl = req.body.url;
+  var getId = null;
+  if(!requestUrl){
+    return res.status(400).json({
+      code: 400,
+      status: "FAILED",
+      message: messageCode.msgInvalidInput
+    });
+  }
+  // Parse the URL
+  const parsedUrl = new URL(requestUrl);
+  // extract the id from the url
+  getId = parsedUrl.searchParams.get('');
+  if (!getId) {
+    getId = parsedUrl.searchParams.get('q');
+  }
+  if(!getId){
+    return res.status(400).json({
+      code: 400,
+      status: "FAILED",
+      message: messageCode.msgInvalidUrl
+    });
+  }
+  try{
+    const isIdExist = await isGnfcIdExist(getId);
+    if (isIdExist === false) {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgNoMatchFound,
+        details: getId
+      });
+    } else {
+      return res.status(200).json({
+        code: 200,
+        status: "SUCCESS",
+        message: messageCode.msgMatchResultsFound,
+        details: isIdExist
+      });
+    }
 
   } catch (error) {
     // Handle any errors that occur during token verification or validation
@@ -976,7 +1068,6 @@ const issueDeliveryChallanWithRetry = async (deliveryChallanId, stockistId, keys
   }
 };
 
-
 const insertRoyaltyPassData = async (data) => {
   if (!data) {
     return false;
@@ -1062,6 +1153,24 @@ const insertDeliveryChallanData = async (data) => {
 
 };
 
+const isGnfcIdExist = async (id) => {
+try{
+  await isDBConnected();
+  const isRoyaltyPassIdExist = await RoyaltyPass.findOne({ royaltyPassNo : id});
+  const isDeliveryChallanExist = await DeliveryChallan.findOne({ deliveryNo: id});
+  if(isRoyaltyPassIdExist){
+    return isRoyaltyPassIdExist;
+  } else if (isDeliveryChallanExist){
+    return isDeliveryChallanExist;
+  } else {
+    return false;
+  }
+} catch(error){
+  console.error("An error occured", error);
+  return false;
+}
+};
+
 module.exports = {
   login,
 
@@ -1071,5 +1180,9 @@ module.exports = {
 
   issueRoyaltyPass,
 
-  issueDeliveryChallan
+  issueDeliveryChallan,
+
+  verifyPocByID,
+
+  verifyPocByIUrl
 }

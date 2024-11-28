@@ -595,4 +595,136 @@ router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueR
 
 router.post('/issue-delivery-challan', validationRoute.signUp, gnfcController.issueDeliveryChallan);
 
+/**
+ * @swagger
+ * /api/poc-verify-id:
+ *   post:
+ *     summary: Verify provided ID
+ *     description: API call for verify Royalty pass ID / Delivery challan ID
+ *     tags: [GNFC POC]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The Royalty pass ID / Delivery challan ID.
+ *             required:
+ *               - id
+ *     responses:
+ *       '200':
+ *         description: Successfully verified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (SUCCESS).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (Valid Royalty pass ID / Delivery challan ID).
+ *                 details:
+ *                   type: string[]
+ *                   description: Result data.
+ *       '400':
+ *         description: Invalid input or empty id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (FAILED).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (Empty id supplied).
+ *       '500':
+ *         description: An error occurred during login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (FAILED).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (An error occurred during verification).
+ */
+
+router.post('/poc-verify-id', gnfcController.verifyPocByID);
+
+/**
+ * @swagger
+ * /api/poc-verify-url:
+ *   post:
+ *     summary: Verify provided ID
+ *     description: API call for verify Royalty pass url / Delivery challan url
+ *     tags: [GNFC POC]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 description: The Royalty pass url / Delivery challan url.
+ *             required:
+ *               - url
+ *     responses:
+ *       '200':
+ *         description: Successfully verified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (SUCCESS).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (Valid Royalty pass url / Delivery challan url).
+ *                 details:
+ *                   type: string[]
+ *                   description: Result data.
+ *       '400':
+ *         description: Invalid input or empty url
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (FAILED).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (Empty url supplied).
+ *       '500':
+ *         description: An error occurred during login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (FAILED).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (An error occurred during verification).
+ */
+
+router.post('/poc-verify-url', gnfcController.verifyPocByIUrl);
+
 module.exports=router;

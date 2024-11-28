@@ -272,6 +272,7 @@ const RoyaltyPassSchema = new mongoose.Schema({
   address: { type: String },
   transactionHash: { type: String },
   url: { type: String, default: ""},
+  imageUrl: {type: String, default: ""},
   qrData: { type: String }
 });
 
@@ -299,6 +300,7 @@ const DeliveryChallanSchema = new mongoose.Schema({
   vehicleNumber: { type: String },
   transactionHash: { type: String },
   url: { type: String, default: ""},
+  imageUrl: {type: String, default: ""},
   qrData: { type: String }
 });
 
