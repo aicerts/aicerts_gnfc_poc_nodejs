@@ -493,32 +493,37 @@ const issueRoyaltyPass = async (req, res) => {
       Object.entries(fields).map(([key, value]) => [key, value === undefined ? "undefined" : String(value)])
     );
     // Split into keys and values
-    const keys = Object.keys(normalizedFields);
-    const values = Object.values(normalizedFields);
+    const _keys = Object.keys(normalizedFields);
+    const _values = Object.values(normalizedFields);
 
-    console.log("The response", fields, keys, values);
+    // Format for console output
+    const keys = JSON.stringify(_keys, null, 2);
+    const values = JSON.stringify(_values, null, 2);
+
+    console.log('keys =', JSON.parse(keys));
+
+    console.log("The response", normalizedFields, keys, values);
 
     try {
-      var { txHash, txFee } = await issueRoyaltyPassWithRetry(
-        fields.royaltyPassNo,
-        defaultLeaser,
-        keys,
-        values,
-        combinedHash,
-        viewEvantRange
-      );
-      // var polygonLink = `https://${process.env.NETWORK}/tx/${txHash}`;
-      if (!txHash) {
-        return {
-          code: 400,
-          status: false,
-          message: messageCode.msgFailedToIssueAfterRetry,
-          details: fields.royaltyPassNo,
-        };
-      }
+      // var { txHash, txFee } = await issueRoyaltyPassWithRetry(
+      //   fields.royaltyPassNo,
+      //   defaultLeaser,
+      //   keys,
+      //   values,
+      //   combinedHash,
+      //   viewEvantRange
+      // );
+      // // var polygonLink = `https://${process.env.NETWORK}/tx/${txHash}`;
+      // if (!txHash) {
+      //   return {
+      //     code: 400,
+      //     status: false,
+      //     message: messageCode.msgFailedToIssueAfterRetry,
+      //     details: fields.royaltyPassNo,
+      //   };
+      // }
 
-      // var txHash = "hash-transaction";
-
+      var txHash = combinedHash;
 
       var modifiedUrl = process.env.POC_SHORT_URL + fields.royaltyPassNo;
 
@@ -532,7 +537,6 @@ const issueRoyaltyPass = async (req, res) => {
       const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url: modifiedUrl };
 
       const storeData = await insertRoyaltyPassData(dataWithQRTransaction);
-
 
       if (storeData) {
         return res.status(200).json({
@@ -559,6 +563,168 @@ const issueRoyaltyPass = async (req, res) => {
       });
     }
 
+  } catch (error) {
+    // Handle any errors that occur during token verification or validation
+    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+  }
+};
+
+
+// API Implementaion without contract call
+const _issueRoyaltyPass = async (req, res) => {
+
+  const reqData = req?.body;
+  try {
+    await isDBConnected();
+    if (reqData.email) {
+      const isLeaserExist = await Stakeholders.findOne({ email: reqData.email, roleId: reqData.leaserId });
+      if (!isLeaserExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgStakeholderNotApproved,
+          details: reqData?.email
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgStakeholderNotfound,
+        details: reqData?.email
+      });
+    }
+
+    if (reqData?.royaltyPassNo) {
+      const isRoyaltyPassExist = await RoyaltyPass.findOne({ royaltyPassNo: reqData?.royaltyPassNo });
+      if (isRoyaltyPassExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgRoyaltyPassExisted,
+          details: reqData?.royaltyPassNo
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.royaltyPassNo
+      });
+    }
+    const fields = {
+      royaltyPassNo: reqData?.royaltyPassNo,
+      leaserId: reqData?.leaserId,
+      issuedDate: reqData?.issuedDate,
+      leaseValidUpto: reqData?.leaseValidUpto,
+      SSPNumber: reqData?.SSPNumber,
+      village: reqData?.village,
+      taluke: reqData?.taluke,
+      district: reqData?.district,
+      mineralName: reqData?.mineralName,
+      mineralGrade: reqData?.mineralGrade,
+      initialQuantatity: reqData?.initialQuantatity,
+      journeyStartDate: reqData?.journeyStartDate,
+      journeyEndDate: reqData?.journeyEndDate,
+      distance: reqData?.distance,
+      duration: reqData?.duration,
+      driverName: reqData?.driverName,
+      driverLiceneceNo: reqData?.driverLiceneceNo,
+      driverMobileNumber: reqData?.driverMobileNumber,
+      vehicleType: reqData?.vehicleType,
+      vehicleNumber: reqData?.vehicleNumber,
+      weightBridgeName: reqData?.weightBridgeName,
+      destinaton: reqData?.destinaton,
+      address: reqData?.address,
+    };
+
+    // Hash sensitive fields
+    const hashedFields = {};
+    let count = 0;
+
+    for (const field in fields) {
+      if (count >= 5) break; // Stop after 5 fields
+      hashedFields[field] = calculateHash(fields[field]);
+      count++;
+    }
+    const combinedHash = calculateHash(JSON.stringify(hashedFields));
+    const viewEvantRange = 5;
+
+    // Normalize values in fields object
+    const normalizedFields = Object.fromEntries(
+      Object.entries(fields).map(([key, value]) => [key, value === undefined ? "undefined" : String(value)])
+    );
+    // Split into keys and values
+    const _keys = Object.keys(normalizedFields);
+    const _values = Object.values(normalizedFields);
+
+    // Format for console output
+    const keys = JSON.stringify(_keys, null, 2);
+    const values = JSON.stringify(_values, null, 2);
+
+    console.log('keys =', JSON.parse(keys));
+
+    console.log("The response", normalizedFields, keys, values);
+
+    try {
+      // var { txHash, txFee } = await issueRoyaltyPassWithRetry(
+      //   fields.royaltyPassNo,
+      //   defaultLeaser,
+      //   keys,
+      //   values,
+      //   combinedHash,
+      //   viewEvantRange
+      // );
+      // // var polygonLink = `https://${process.env.NETWORK}/tx/${txHash}`;
+      // if (!txHash) {
+      //   return {
+      //     code: 400,
+      //     status: false,
+      //     message: messageCode.msgFailedToIssueAfterRetry,
+      //     details: fields.royaltyPassNo,
+      //   };
+      // }
+
+      var txHash = combinedHash;
+
+      var modifiedUrl = process.env.POC_SHORT_URL + fields.royaltyPassNo;
+
+      var qrCodeImage = await QRCode.toDataURL(modifiedUrl, {
+        errorCorrectionLevel: "H",
+        width: 450, // Adjust the width as needed
+        height: 450, // Adjust the height as needed
+      });
+
+      // Generate encrypted URL with certificate data
+      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url: modifiedUrl };
+
+      const storeData = await insertRoyaltyPassData(dataWithQRTransaction);
+
+      if (storeData) {
+        return res.status(200).json({
+          code: 200,
+          status: "SUCCESS",
+          message: messageCode.msgRoyaltyIssueSuccess,
+          details: storeData
+        });
+      } else {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgRoyaltyIssueUnsuccess,
+          details: reqData?.royaltyPassNo
+        });
+      }
+
+    } catch (error) {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.royaltyPassNo
+      });
+    }
 
   } catch (error) {
     // Handle any errors that occur during token verification or validation
@@ -601,7 +767,7 @@ const issueDeliveryChallan = async (req, res) => {
           code: 400,
           status: "FAILED",
           message: messageCode.msgDeliveryChallansExisted,
-          details: reqData?.email
+          details: reqData?.deliveryNo
         });
       }
     } else {
@@ -621,6 +787,8 @@ const issueDeliveryChallan = async (req, res) => {
       buyerId: reqData?.buyerId, // Stackholder userId who is Stockist
       buyerName: reqData?.buyerName,
       buyerAddress: reqData?.buyerAddress,
+      mineralName: reqData?.mineralName,
+      mineralGrade: reqData?.mineralGrade,
       initialQuantatity: reqData?.initialQuantatity,
       village: reqData?.village,
       taluke: reqData?.taluke,
@@ -677,7 +845,7 @@ const issueDeliveryChallan = async (req, res) => {
       //   };
       // }
 
-      var txHash = "hash-transaction";
+      var txHash = combinedHash;
 
       var modifiedUrl = process.env.POC_SHORT_URL + fields.deliveryNo;
 
@@ -688,7 +856,7 @@ const issueDeliveryChallan = async (req, res) => {
       });
 
       // Generate encrypted URL with certificate data
-      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url : modifiedUrl };
+      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url: modifiedUrl };
 
       const storeData = await insertDeliveryChallanData(dataWithQRTransaction);
 
@@ -704,7 +872,7 @@ const issueDeliveryChallan = async (req, res) => {
           code: 400,
           status: "FAILED",
           message: messageCode.msgDeliveryChallanUnsuccess,
-          details: reqData?.royaltyPassNo
+          details: reqData?.deliveryNo
         });
       }
 
@@ -713,7 +881,162 @@ const issueDeliveryChallan = async (req, res) => {
         code: 400,
         status: "FAILED",
         message: messageCode.msgInvalidInput,
-        details: reqData?.royaltyPassNo
+        details: reqData?.deliveryNo
+      });
+    }
+
+
+  } catch (error) {
+    // Handle any errors that occur during token verification or validation
+    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+  }
+};
+
+// API Implementaion without contract call
+const _issueDeliveryChallan = async (req, res) => {
+  const reqData = req?.body;
+  try {
+    await isDBConnected();
+    if (reqData.email) {
+      const isIssuerExist = await Stakeholders.findOne({ email: reqData.email });
+      if (!isIssuerExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgStakeholderNotApproved,
+          details: reqData?.email
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgStakeholderNotfound,
+        details: reqData?.email
+      });
+    }
+    if (reqData?.deliveryNo) {
+      const isDeliveryChallanExist = await DeliveryChallan.findOne({ deliveryNo: reqData?.deliveryNo });
+      if (isDeliveryChallanExist) {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgDeliveryChallansExisted,
+          details: reqData?.deliveryNo
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.deliveryNo
+      });
+    }
+
+    const fields = {
+      deliveryNo: reqData?.deliveryNo,
+      royaltyPassNo: reqData?.royaltyPassNo,
+      SSPNumber: reqData?.SSPNumber,
+      surveyNo: reqData?.surveyNo,
+      buyerId: reqData?.buyerId, // Stackholder userId who is Stockist
+      buyerName: reqData?.buyerName,
+      buyerAddress: reqData?.buyerAddress,
+      mineralName: reqData?.mineralName,
+      mineralGrade: reqData?.mineralGrade,
+      initialQuantatity: reqData?.initialQuantatity,
+      village: reqData?.village,
+      taluke: reqData?.taluke,
+      district: reqData?.district,
+      pincode: reqData?.pincode,
+      transportationMode: reqData?.transportationMode,
+      transportationDistance: reqData?.transportationDistance,
+      journeyStartDate: reqData?.journeyStartDate,
+      journeyEndDate: reqData?.journeyEndDate,
+      driverName: reqData?.driverName,
+      driverLiceneceNo: reqData?.driverLiceneceNo,
+      vehicleType: reqData?.vehicleType,
+      vehicleNumber: reqData?.vehicleNumber
+    };
+
+
+    // Hash sensitive fields
+    var hashedFields = {};
+    let count = 0;
+    for (const field in fields) {
+      if (count >= 5) break; // Stop after 5 fields
+      hashedFields[field] = calculateHash(fields[field]);
+      count++;
+    }
+    const combinedHash = calculateHash(JSON.stringify(hashedFields));
+    const viewEvantRange = 5;
+
+    // Normalize values in fields object
+    const normalizedFields = Object.fromEntries(
+      Object.entries(fields).map(([key, value]) => [key, value === undefined ? "undefined" : String(value)])
+    );
+    // Split into keys and values
+    const keys = Object.keys(normalizedFields);
+    const values = Object.values(normalizedFields);
+
+    console.log("The response", fields, keys, values);
+
+    try {
+      // var { txHash, txFee } = await issueDeliveryChallanWithRetry(
+      //   fields.deliveryNo,
+      //   fields.buyerId,
+      //   keys,
+      //   values,
+      //   combinedHash,
+      //   viewEvantRange
+      // );
+      // // var polygonLink = `https://${process.env.NETWORK}/tx/${txHash}`;
+      // if (!txHash) {
+      //   return {
+      //     code: 400,
+      //     status: false,
+      //     message: messageCode.msgFailedToIssueAfterRetry,
+      //     details: fields.deliveryNo,
+      //   };
+      // }
+
+      var txHash = combinedHash;
+
+      var modifiedUrl = process.env.POC_SHORT_URL + fields.deliveryNo;
+
+      var qrCodeImage = await QRCode.toDataURL(modifiedUrl, {
+        errorCorrectionLevel: "H",
+        width: 450, // Adjust the width as needed
+        height: 450, // Adjust the height as needed
+      });
+
+      // Generate encrypted URL with certificate data
+      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url: modifiedUrl };
+
+      const storeData = await insertDeliveryChallanData(dataWithQRTransaction);
+
+      if (storeData) {
+        return res.status(200).json({
+          code: 200,
+          status: "SUCCESS",
+          message: messageCode.msgDeliveryChallanSuccess,
+          details: storeData
+        });
+      } else {
+        return res.status(400).json({
+          code: 400,
+          status: "FAILED",
+          message: messageCode.msgDeliveryChallanUnsuccess,
+          details: reqData?.deliveryNo
+        });
+      }
+
+    } catch (error) {
+      return res.status(400).json({
+        code: 400,
+        status: "FAILED",
+        message: messageCode.msgInvalidInput,
+        details: reqData?.deliveryNo
       });
     }
 
@@ -732,16 +1055,16 @@ const issueDeliveryChallan = async (req, res) => {
  */
 const verifyPocByID = async (req, res) => {
   const requestId = req.body.id;
-  if(!requestId){
+  if (!requestId) {
     return res.status(400).json({
       code: 400,
       status: "FAILED",
       message: messageCode.msgInvalidInput
     });
   }
-  try{
+  try {
     const isIdExist = await isGnfcIdExist(requestId);
-    if(isIdExist === false) {
+    if (isIdExist === false) {
       return res.status(400).json({
         code: 400,
         status: "FAILED",
@@ -771,7 +1094,7 @@ const verifyPocByID = async (req, res) => {
 const verifyPocByIUrl = async (req, res) => {
   const requestUrl = req.body.url;
   var getId = null;
-  if(!requestUrl){
+  if (!requestUrl) {
     return res.status(400).json({
       code: 400,
       status: "FAILED",
@@ -785,14 +1108,14 @@ const verifyPocByIUrl = async (req, res) => {
   if (!getId) {
     getId = parsedUrl.searchParams.get('q');
   }
-  if(!getId){
+  if (!getId) {
     return res.status(400).json({
       code: 400,
       status: "FAILED",
       message: messageCode.msgInvalidUrl
     });
   }
-  try{
+  try {
     const isIdExist = await isGnfcIdExist(getId);
     if (isIdExist === false) {
       return res.status(400).json({
@@ -933,7 +1256,7 @@ const issueRoyaltyPassWithRetry = async (royaltyPassId, leaserId, keys, values, 
   if (!newContract) {
     return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
   }
-  console.log("Contract inputs", newContract, royaltyPassId, leaserId, keys, values, hash, viewRange);
+  console.log("Contract inputs", keys, values);
   try {
     // Issue Single Certifications on Blockchain
     const tx = await newContract.createRoyaltyPass(
@@ -1125,6 +1448,8 @@ const insertDeliveryChallanData = async (data) => {
       buyerId: data?.buyerId,
       buyerName: data?.buyerName,
       buyerAddress: data?.buyerAddress,
+      mineralName: data?.mineralName,
+      mineralGrade: data?.mineralGrade,
       initialQuantatity: data?.initialQuantatity,
       village: data?.village,
       taluke: data?.taluke,
@@ -1144,7 +1469,7 @@ const insertDeliveryChallanData = async (data) => {
     });
     // Save the new Issues document to the database
     const result = await newDeliveryChallan.save();
-    return true;
+    return result;
   } catch (error) {
     // Handle errors related to database connection or insertion
     console.error("Error connecting to MongoDB:", error);
@@ -1154,21 +1479,21 @@ const insertDeliveryChallanData = async (data) => {
 };
 
 const isGnfcIdExist = async (id) => {
-try{
-  await isDBConnected();
-  const isRoyaltyPassIdExist = await RoyaltyPass.findOne({ royaltyPassNo : id});
-  const isDeliveryChallanExist = await DeliveryChallan.findOne({ deliveryNo: id});
-  if(isRoyaltyPassIdExist){
-    return isRoyaltyPassIdExist;
-  } else if (isDeliveryChallanExist){
-    return isDeliveryChallanExist;
-  } else {
+  try {
+    await isDBConnected();
+    const isRoyaltyPassIdExist = await RoyaltyPass.findOne({ royaltyPassNo: id });
+    const isDeliveryChallanExist = await DeliveryChallan.findOne({ deliveryNo: id });
+    if (isRoyaltyPassIdExist) {
+      return isRoyaltyPassIdExist;
+    } else if (isDeliveryChallanExist) {
+      return isDeliveryChallanExist;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error("An error occured", error);
     return false;
   }
-} catch(error){
-  console.error("An error occured", error);
-  return false;
-}
 };
 
 module.exports = {
@@ -1179,8 +1504,10 @@ module.exports = {
   logout,
 
   issueRoyaltyPass,
+  _issueRoyaltyPass,
 
   issueDeliveryChallan,
+  _issueDeliveryChallan,
 
   verifyPocByID,
 

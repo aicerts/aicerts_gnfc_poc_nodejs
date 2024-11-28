@@ -285,6 +285,8 @@ const DeliveryChallanSchema = new mongoose.Schema({
   buyerId: { type: String }, // Stackholder userId who is Stockist
   buyerName: { type: String },
   buyerAddress: { type: String },
+  mineralName: { type: String },
+  mineralGrade: { type: String },
   initialQuantatity: { type: Number },
   village: { type: String },
   taluke: { type: String },

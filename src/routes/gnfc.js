@@ -442,7 +442,7 @@ router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
  *                   example: An error occurred
  */
 
-router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueRoyaltyPass);
+router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController._issueRoyaltyPass);
 
 /**
  * @swagger
@@ -482,6 +482,12 @@ router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueR
  *               buyerAddress:
  *                 type: string
  *                 description: Enter valid buyerAddress
+ *               mineralName:
+ *                 type: string
+ *                 description: Enter valid mineralName
+ *               mineralGrade:
+ *                 type: string
+ *                 description: Enter valid mineralGrade
  *               initialQuantatity:
  *                 type: number
  *                 description: Enter valid initialQuantatity
@@ -530,6 +536,8 @@ router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueR
  *               - buyerId
  *               - buyerName
  *               - buyerAddress
+ *               - mineralName
+ *               - mineralGrade
  *               - initialQuantatity
  *               - village
  *               - taluke
@@ -593,7 +601,7 @@ router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueR
  *                   example: An error occurred
  */
 
-router.post('/issue-delivery-challan', validationRoute.signUp, gnfcController.issueDeliveryChallan);
+router.post('/issue-delivery-challan', validationRoute.signUp, gnfcController._issueDeliveryChallan);
 
 /**
  * @swagger
