@@ -366,7 +366,7 @@ const createLeaser = async (req, res) => {
     return res.status(422).json({ code: 422, status: "FAILED", message: messageCode.msgEnterInvalid, details: validResult.array() });
   }
   // Extracting name, email, and password from the request body
-  const { email, userId, tenure, location, capacity } = req.body;
+  const { email, userId } = req.body;
   if (!email || !userId) {
     return res.json({
       code: 400,
@@ -385,13 +385,24 @@ const createLeaser = async (req, res) => {
         message: messageCode.msgPlsEnterValid,
       });
     }
-    const isLeaseExist = await Stakeholders.findOne({ userId: userId });
+    const isLeaserExist = await Stakeholders.findOne({ userId: userId, role: existedRoles[0] });
 
   } catch (error) {
     // An error occurred during signup process
     return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError, details: error });
   }
 };
+
+/**
+ * API call for Issue Royalty Pass.
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+const issueRoyaltyPass = async (req, res) => {
+
+};
+
 
 const grantOrRevokeRoleWithRetry = async (roleStatus, role, account, retryCount = 3) => {
   const newContract = await connectToPolygonPoc();
@@ -504,16 +515,20 @@ const addLeaserWithRetry = async (leaser, address, retryCount = 3) => {
 };
 
 
-const issueRoyaltyPassWithRetry = async (leaser, address, retryCount = 3) => {
+const issueRoyaltyPassWithRetry = async (royaltyPassId, leaserId, keys, values, hash, viewRange, retryCount = 3) => {
   const newContract = await connectToPolygonPoc();
   if (!newContract) {
     return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
   }
   try {
     // Issue Single Certifications on Blockchain
-    const tx = await newContract.createLease(
-      leaser,
-      address
+    const tx = await newContract.createRoyaltyPass(
+      royaltyPassId, 
+      leaserId, 
+      keys, 
+      values, 
+      hash,
+      viewRange
     );
 
     let txHash = tx.hash;
@@ -523,7 +538,7 @@ const issueRoyaltyPassWithRetry = async (leaser, address, retryCount = 3) => {
         console.log(`Unable to process the transaction. Retrying... Attempts left: ${retryCount}`);
         // Retry after a delay (e.g., 1.5 seconds)
         await holdExecution(1500);
-        return issueRoyaltyPassWithRetry(leaser, address, retryCount - 1);
+        return issueRoyaltyPassWithRetry(royaltyPassId, leaserId, keys, values, hash, viewRange, retryCount - 1);
       } else {
         return {
           txHash: null,
@@ -542,7 +557,75 @@ const issueRoyaltyPassWithRetry = async (leaser, address, retryCount = 3) => {
       console.log(`Connection timed out. Retrying... Attempts left: ${retryCount}`);
       // Retry after a delay (e.g., 2 seconds)
       await holdExecution(2000);
-      return issueRoyaltyPassWithRetry(leaser, address, retryCount - 1);
+      return issueRoyaltyPassWithRetry(royaltyPassId, leaserId, keys, values, hash, viewRange, retryCount - 1);
+    } else if (error.code === 'NONCE_EXPIRED') {
+      // Extract and handle the error reason
+      // console.log("Error reason:", error.reason);
+      return {
+        txHash: null,
+        txFee: null
+      };
+    } else if (error.reason) {
+      // Extract and handle the error reason
+      // console.log("Error reason:", error.reason);
+      return {
+        txHash: null,
+        txFee: null
+      };
+    } else {
+      // If there's no specific reason provided, handle the error generally
+      // console.error(messageCode.msgFailedOpsAtBlockchain, error);
+      return {
+        txHash: null,
+        txFee: null
+      };
+    }
+  }
+};
+
+const issueDeliveryChallanWithRetry = async (deliveryChallanId, stockistId, keys, values, hash, viewRange, retryCount = 3) => {
+  const newContract = await connectToPolygonPoc();
+  if (!newContract) {
+    return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
+  }
+  try {
+    // Issue Single Certifications on Blockchain
+    const tx = await newContract.createDeliveryChallan(
+      deliveryChallanId, 
+      stockistId, 
+      keys, 
+      values, 
+      hash,
+      viewRange
+    );
+
+    let txHash = tx.hash;
+    //   let txFee = await fetchOrEstimateTransactionFee(tx);
+    if (!txHash) {
+      if (retryCount > 0) {
+        console.log(`Unable to process the transaction. Retrying... Attempts left: ${retryCount}`);
+        // Retry after a delay (e.g., 1.5 seconds)
+        await holdExecution(1500);
+        return issueDeliveryChallanWithRetry(deliveryChallanId, stockistId, keys, values, hash, viewRange, retryCount - 1);
+      } else {
+        return {
+          txHash: null,
+          txFee: null
+        };
+      }
+    }
+
+    return {
+      txHash: txHash,
+      txFee: null
+    };
+
+  } catch (error) {
+    if (retryCount > 0 && error.code === 'ETIMEDOUT') {
+      console.log(`Connection timed out. Retrying... Attempts left: ${retryCount}`);
+      // Retry after a delay (e.g., 2 seconds)
+      await holdExecution(2000);
+      return issueDeliveryChallanWithRetry(deliveryChallanId, stockistId, keys, values, hash, viewRange, retryCount - 1);
     } else if (error.code === 'NONCE_EXPIRED') {
       // Extract and handle the error reason
       // console.log("Error reason:", error.reason);
@@ -577,5 +660,7 @@ module.exports = {
 
   approveLeaser,
 
-  createLeaser
+  createLeaser,
+
+  issueRoyaltyPass
 }

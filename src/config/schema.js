@@ -247,8 +247,8 @@ const LeaserSchema = new mongoose.Schema({
 
 // Schema for royalty pass (POC)
 const RoyaltyPassSchema = new mongoose.Schema({
-  royalityPassNo: { type: String, unique: true },
-  leaserId: { type: String },
+  royaltyPassNo: { type: String, unique: true },
+  leaserId: { type: String, default: 'GNFCLEASER001' },
   issuedDate: { type: Date, default: Date.now },
   leaseValidUpto: { type: Date },
   SSPNumber: { type: String },
@@ -277,8 +277,8 @@ const RoyaltyPassSchema = new mongoose.Schema({
 
 // Schema for Delivery Challan
 const DeliveryChallanSchema = new mongoose.Schema({
-  royalityPassNo: { type: String },
   deliveryNo: { type: String, unique: true },
+  royaltyPassNo: { type: String },
   SSPNumber: { type: String },
   surveyNo: { type: String },
   buyerId: { type: String }, // Stackholder userId who is Stockist
