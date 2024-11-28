@@ -26,9 +26,9 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Certs365 admin API',
+      title: 'GNFC POC APIs',
       version: '1.0.0',
-      description: 'API documentation for Certs365 admin module',
+      description: 'API documentation for Certs365-GNFC POC module',
     },
   },
   apis: ['./src/routes/*.js'], // Add other paths if needed

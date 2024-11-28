@@ -1656,7 +1656,7 @@ const isDBConnected = async (maxRetries = 5, retryDelay = 1500) => {
 
   while (retryCount < maxRetries) {
     try {
-      await mongoose.connect(process.env.MONGODB_URI);
+      await mongoose.connect(process.env.MONGODB_MOCK_URI);
       return true;
     } catch (error) {
       console.error(`Error connecting to MongoDB: ${error.message}`);

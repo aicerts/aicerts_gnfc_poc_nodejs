@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 
 // Connect to MongoDB using the MONGODB_URI environment variable
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_MOCK_URI)
   .then(() => {
     console.log("DB Connected"); // Log a message when the connection is successful
   })

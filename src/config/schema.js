@@ -77,53 +77,64 @@ const BlockchainBadgeIssuesSchema = new mongoose.Schema({
 // Define the schema for Stakeholders ( Leaser / Stockist / Distributor / Retailor / Company )
 const StakeholdersSchema = new mongoose.Schema({
   email: { type: String, required: true },
-  name: { type: String },
-  role: { type: String },
-  userId: { type: String },
-  roleId: { type: String },
-  password: { type: String },
-  isActive: { type: Boolean, default: true },
-  status: { type: String },
-  approvedDate: { type: Date, default: null },
-  issuedDate: { type: Date, default: Date.now }
 });
 
 // Define the schema for Lease (POC)
-const LeaseSchema = new mongoose.Schema({
+const LeaserSchema = new mongoose.Schema({
   email: { type: String, required: true },
-  role: { type: String },
-  userId: { type: String },
-  leaseId: { type: String },
+});
+
+// Schema for royalty pass (POC)
+const RoyaltyPassSchema = new mongoose.Schema({
+  royaltyPassNo: { type: String, unique: true },
   leaserId: { type: String },
-  leaseHash: { type: String },
-  transactionHash: { type: String },
-  leaseSequence: { type: Number, default: 0},
-  leaser: { type: String },
-  location: { type: String },
-  isActive: { type: Boolean, default: true },
-  capacity: { type: Number },
-  startDate: { type: Date, default: null },
-  endDate: { type: Date, default: null },
-  blockchainUrl: { type: String },
-  issuedDate: { type: Date, default: Date.now }
+  issuedDate: { type: Date, default: Date.now },
+  leaseValidUpto: { type: Date },
+  SSPNumber: { type: String },
+  village: { type: String },
+  taluke: { type: String },
+  district: { type: String },
+  mineralName: { type: String },
+  mineralGrade: { type: String },
+  initialQuantatity: { type: Number },
+  journeyStartDate: { type: Date },
+  journeyEndDate: { type: Date },
+  distance: { type: String },
+  duration: { type: String },
+  driverName: { type: String },
+  driverLiceneceNo: { type: String },
+  driverMobileNumber: { type: String },
+  vehicleType: { type: String },
+  vehicleNumber: { type: String },
+  weightBridgeName: { type: String },
+  destinaton: { type: String },
+  address: { type: String }
 });
 
-
-
-// Define the schema for Orders (POC)
-const OrdersSchema = new mongoose.Schema({
-  email: { type: String, required: true },
-  name: { type: String },
-  orderId: { type: String },
-  amount: { type: Number, default: 0 },
-  quantity: { type: Number, default: 0 },
-  userId: { type: String },
-  orderSequence: { type: Number, default: 0},
-  leaseSequence: { type: Number, default: 0},
-  royaltyAmount:{ type: Number, default: 0},
-  status: { type: String },
-  issuedDate: { type: Date, default: Date.now }
+// Schema for Delivery Challan
+const DeliveryChallanSchema = new mongoose.Schema({
+  royaltyPassNo: { type: String },
+  deliveryNo: { type: String, unique: true },
+  SSPNumber: { type: String },
+  surveyNo: { type: String },
+  buyerId: { type: String }, // Stackholder userId who is Stockist
+  buyerName: { type: String },
+  buyerAddress: { type: String },
+  initialQuantatity: { type: Number },
+  village: { type: String },
+  taluke: { type: String },
+  district: { type: String },
+  pincode: { type: Number },
+  transportationMode: { type: String },
+  transportationDistance: { type: String },
+  journeyStartDate: { type: Date },
+  journeyEndDate: { type: Date },
+  driverName: { type: String },
+  driverLiceneceNo: { type: String },
+  vehicleType: { type: String },
+  vehicleNumber: { type: String }
 });
+
 
 const Admin = mongoose.model('Admin', AdminSchema);
 const ServiceAccountQuotas = mongoose.model('ServiceAccountQuotas', ServiceAccountQuotasSchema);
@@ -140,8 +151,9 @@ const ServerDetails = mongoose.model('ServerDetails', ServerDetailsSchema);
 const BadgeDetails = mongoose.model('BadgeDetails', BlockchainBadgesSchema);
 const BadgeIssues = mongoose.model('BadgeIssues', BlockchainBadgeIssuesSchema);
 const Stakeholders = mongoose.model('Stakeholders', StakeholdersSchema);
-const Lease = mongoose.model('Lease', LeaseSchema);
-const Orders = mongoose.model('Orders', OrdersSchema);
+const Leaser = mongoose.model('Leaser', LeaserSchema);
+const RoyaltyPass = mongoose.model('RoyaltyPass', RoyaltyPassSchema);
+const DeliveryChallan = mongoose.model('DeliveryChallan', DeliveryChallanSchema);
 
 module.exports = {
   Admin,
@@ -159,6 +171,7 @@ module.exports = {
   BadgeDetails,
   BadgeIssues,
   Stakeholders,
-  Lease,
-  Orders,
+  Leaser,
+  RoyaltyPass,
+  DeliveryChallan
 };
