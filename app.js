@@ -5,12 +5,13 @@ require('dotenv').config();
 require('./src/config/scheduler');
 
 // Import required modules
-const express = require("express");
+const express = require('express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const bodyParser = require('body-parser');
-const cors = require("cors");
+const cors = require('cors');
 const multer = require('multer');
+const mockData = require('./Mock data/mockDataDump');
 
 // Create an Express application
 const app = express();
@@ -41,19 +42,24 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use(cors());
 app.use(bodyParser.json());
 
-// Routes 
+// Routes
 app.use('/api', tasksRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  setTimeout(function () { next(); }, 12000000); // 120 seconds
+  setTimeout(function () {
+    next();
+  }, 12000000); // 120 seconds
   console.error(err.stack);
   if (err instanceof multer.MulterError) {
     // Multer error occurred (e.g., file size limit exceeded)
-    res.status(400).json({ status: "FAILED", message: "Invalid File format / " + err.message });
+    res.status(400).json({
+      status: 'FAILED',
+      message: 'Invalid File format / ' + err.message,
+    });
   } else if (err) {
     // Other errors
-    res.status(400).json({ status: "FAILED", message: err.message });
+    res.status(400).json({ status: 'FAILED', message: err.message });
   } else {
     next(); // Pass control to the next middleware
   }
@@ -71,6 +77,8 @@ app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Start the server
 const server = app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`);
+  // mockData.insertMockRoyaltyPass();
+  // mockData.insertMockDeliveryChallan();
 });
 
 // Graceful Shutdown
@@ -82,4 +90,3 @@ process.on('SIGINT', () => {
     process.exit(0); // Exit the process with a success code
   });
 });
-
