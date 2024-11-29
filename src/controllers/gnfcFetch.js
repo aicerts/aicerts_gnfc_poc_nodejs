@@ -68,9 +68,9 @@ const deliveryChallanList = async (req, res) => {
 const wholeTracker = async (req, res) => {
   try {
     await isDBConnected();
-    const deliveryChallanNo = req.params.deliveryChallan;
+    const deliveryNo = req.params.deliveryChallan;
     const deliveryChallan = await DeliveryChallan.findOne({
-      deliveryChallanNo,
+      deliveryNo,
     });
     const royaltyPass = await RoyaltyPass.findOne({
       royaltyPassNo: deliveryChallan.royaltyPassNo,
@@ -85,7 +85,7 @@ const wholeTracker = async (req, res) => {
     res.json({
       status: 200,
       data: {
-        deliveryChallan,
+        deliveryNo,
         royaltyPass,
         leaser,
       },
@@ -119,6 +119,7 @@ const royaltyPassDailyReport = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 const royaltyPassWeeklyReport = async (req, res) => {
   try {
     await isDBConnected();
@@ -146,6 +147,7 @@ const royaltyPassWeeklyReport = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 const royaltyPassMonthlyReport = async (req, res) => {
   try {
     await isDBConnected();
@@ -172,6 +174,30 @@ const royaltyPassMonthlyReport = async (req, res) => {
   }
 };
 
+const royaltyPassAnnualReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    const start = new Date(new Date().getFullYear(), 0, 1);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(new Date().getFullYear(), 11, 31);
+    end.setHours(23, 59, 59, 999);
+
+    const count = await RoyaltyPass.countDocuments({
+      issuedDate: {
+        $gte: start,
+        $lt: end,
+      },
+    });
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   leaserList,
   leaserById,
@@ -181,4 +207,5 @@ module.exports = {
   royaltyPassDailyReport,
   royaltyPassWeeklyReport,
   royaltyPassMonthlyReport,
+  royaltyPassAnnualReport,
 };

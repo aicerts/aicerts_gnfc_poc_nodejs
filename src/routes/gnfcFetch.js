@@ -136,4 +136,10 @@ router.get(
   gnfcController.royaltyPassMonthlyReport
 );
 
+//annual royalty pass issuance counter
+router.get(
+  '/annual-royalty-pass/report',
+  gnfcController.royaltyPassAnnualReport
+);
+
 module.exports = router;
