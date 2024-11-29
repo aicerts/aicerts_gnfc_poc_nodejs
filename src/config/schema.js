@@ -268,7 +268,7 @@ const RoyaltyPassSchema = new mongoose.Schema({
   vehicleType: { type: String },
   vehicleNumber: { type: String },
   weightBridgeName: { type: String },
-  destinaton: { type: String },
+  destination: { type: String },
   address: { type: String },
   transactionHash: { type: String },
   url: { type: String, default: ""},

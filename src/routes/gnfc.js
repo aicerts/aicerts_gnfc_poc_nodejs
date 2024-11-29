@@ -361,12 +361,12 @@ router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
  *               weightBridgeName:
  *                 type: string
  *                 description: Enter valid weightBridgeName
- *               destinaton:
+ *               destination:
  *                 type: string
  *                 description: Enter valid destinaton
  *               address:
  *                 type: string
- *                 description: Enter valid address
+ *                 description: Enter valid destinaton
  *             required:
  *               - email
  *               - royaltyPassNo
@@ -390,7 +390,7 @@ router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
  *               - vehicleType
  *               - vehicleNumber
  *               - weightBridgeName
- *               - destinaton
+ *               - destination
  *               - address
  *     responses:
  *       '200':
@@ -442,7 +442,7 @@ router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
  *                   example: An error occurred
  */
 
-router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController._issueRoyaltyPass);
+router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueRoyaltyPass);
 
 /**
  * @swagger
@@ -601,7 +601,7 @@ router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController._issue
  *                   example: An error occurred
  */
 
-router.post('/issue-delivery-challan', validationRoute.signUp, gnfcController._issueDeliveryChallan);
+router.post('/issue-delivery-challan', validationRoute.signUp, gnfcController.issueDeliveryChallan);
 
 /**
  * @swagger
