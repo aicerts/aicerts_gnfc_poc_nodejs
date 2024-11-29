@@ -142,4 +142,28 @@ router.get(
   gnfcController.royaltyPassAnnualReport
 );
 
+//Daily delivery challan issuance counter
+router.get(
+  '/daily-delivery-challan/report',
+  gnfcController.deliveryChallanDailyReport
+);
+
+//Weekly delivery challan issuance counter
+router.get(
+  '/weekly-delivery-challan/report',
+  gnfcController.deliveryChallanWeeklyReport
+);
+
+//monthly delivery challan issuance counter
+router.get(
+  '/monthly-delivery-challan/report',
+  gnfcController.deliveryChallanMonthlyReport
+);
+
+//annual delivery challan issuance counter
+router.get(
+  '/annual-delivery-challan/report',
+  gnfcController.deliveryChallanAnnualReport
+);
+
 module.exports = router;

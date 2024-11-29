@@ -105,7 +105,7 @@ const royaltyPassDailyReport = async (req, res) => {
     // end.setHours(23, 59, 59, 999);
 
     const count = await RoyaltyPass.countDocuments({
-      issuedDate: {
+      issuanceDate: {
         $gte: new Date().setHours(0, 0, 0, 0),
         $lt: new Date().setHours(23, 59, 59, 999),
       },
@@ -134,7 +134,7 @@ const royaltyPassWeeklyReport = async (req, res) => {
     weekEnd.setHours(23, 59, 59, 999);
 
     const count = await RoyaltyPass.countDocuments({
-      issuedDate: {
+      issuanceDate: {
         $gte: weekStart,
         $lt: weekEnd,
       },
@@ -160,7 +160,7 @@ const royaltyPassMonthlyReport = async (req, res) => {
     monthEnd.setHours(23, 59, 59, 999);
 
     const count = await RoyaltyPass.countDocuments({
-      issuedDate: {
+      issuanceDate: {
         $gte: monthStart,
         $lt: monthEnd,
       },
@@ -184,7 +184,109 @@ const royaltyPassAnnualReport = async (req, res) => {
     end.setHours(23, 59, 59, 999);
 
     const count = await RoyaltyPass.countDocuments({
-      issuedDate: {
+      issuanceDate: {
+        $gte: start,
+        $lt: end,
+      },
+    });
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deliveryChallanDailyReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    // const start = new Date();
+    // start.setHours(0, 0, 0, 0);
+
+    // const end = new Date();
+    // end.setHours(23, 59, 59, 999);
+
+    const count = await DeliveryChallan.countDocuments({
+      issuanceDate: {
+        $gte: new Date().setHours(0, 0, 0, 0),
+        $lt: new Date().setHours(23, 59, 59, 999),
+      },
+    });
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deliveryChallanWeeklyReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    const start = new Date();
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    const weekStart = new Date(start.setDate(diff));
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const count = await DeliveryChallan.countDocuments({
+      issuanceDate: {
+        $gte: weekStart,
+        $lt: weekEnd,
+      },
+    });
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deliveryChallanMonthlyReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    const start = new Date();
+    const monthStart = new Date(start.getFullYear(), start.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const monthEnd = new Date(monthStart);
+    monthEnd.setMonth(monthEnd.getMonth() + 1);
+    monthEnd.setHours(23, 59, 59, 999);
+
+    const count = await DeliveryChallan.countDocuments({
+      issuanceDate: {
+        $gte: monthStart,
+        $lt: monthEnd,
+      },
+    });
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deliveryChallanAnnualReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    const start = new Date(new Date().getFullYear(), 0, 1);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(new Date().getFullYear(), 11, 31);
+    end.setHours(23, 59, 59, 999);
+
+    const count = await DeliveryChallan.countDocuments({
+      issuanceDate: {
         $gte: start,
         $lt: end,
       },
@@ -208,4 +310,8 @@ module.exports = {
   royaltyPassWeeklyReport,
   royaltyPassMonthlyReport,
   royaltyPassAnnualReport,
+  deliveryChallanDailyReport,
+  deliveryChallanWeeklyReport,
+  deliveryChallanMonthlyReport,
+  deliveryChallanAnnualReport,
 };

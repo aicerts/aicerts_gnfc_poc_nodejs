@@ -52,14 +52,12 @@ const {
 const signup = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        code: 422,
-        status: 'FAILED',
-        message: messageCode.msgEnterInvalid,
-        details: validResult.array(),
-      });
+    return res.status(422).json({
+      code: 422,
+      status: 'FAILED',
+      message: messageCode.msgEnterInvalid,
+      details: validResult.array(),
+    });
   }
   // Extracting name, email, and password from the request body
   var { name, email, password, role } = req.body;
@@ -119,14 +117,12 @@ const signup = async (req, res) => {
     });
   } catch (error) {
     // An error occurred during signup process
-    return res
-      .status(500)
-      .json({
-        code: 500,
-        status: 'FAILED',
-        message: messageCode.msgInternalError,
-        details: error,
-      });
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+      details: error,
+    });
   }
 };
 
@@ -139,14 +135,12 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        code: 422,
-        status: 'FAILED',
-        message: messageCode.msgEnterInvalid,
-        details: validResult.array(),
-      });
+    return res.status(422).json({
+      code: 422,
+      status: 'FAILED',
+      message: messageCode.msgEnterInvalid,
+      details: validResult.array(),
+    });
   }
   let { email, role, password } = req.body;
 
@@ -256,14 +250,12 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        code: 422,
-        status: 'FAILED',
-        message: messageCode.msgEnterInvalid,
-        details: validResult.array(),
-      });
+    return res.status(422).json({
+      code: 422,
+      status: 'FAILED',
+      message: messageCode.msgEnterInvalid,
+      details: validResult.array(),
+    });
   }
   let { email, role } = req.body;
   try {
@@ -317,14 +309,12 @@ const logout = async (req, res) => {
 const approveLeaser = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        code: 422,
-        status: 'FAILED',
-        message: messageCode.msgEnterInvalid,
-        details: validResult.array(),
-      });
+    return res.status(422).json({
+      code: 422,
+      status: 'FAILED',
+      message: messageCode.msgEnterInvalid,
+      details: validResult.array(),
+    });
   }
   // Extracting name, email, and password from the request body
   const { email, userId } = req.body;
@@ -399,14 +389,12 @@ const approveLeaser = async (req, res) => {
     });
   } catch (error) {
     // An error occurred during signup process
-    return res
-      .status(500)
-      .json({
-        code: 500,
-        status: 'FAILED',
-        message: messageCode.msgInternalError,
-        details: error,
-      });
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+      details: error,
+    });
   }
 };
 
@@ -419,14 +407,12 @@ const approveLeaser = async (req, res) => {
 const createLeaser = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res
-      .status(422)
-      .json({
-        code: 422,
-        status: 'FAILED',
-        message: messageCode.msgEnterInvalid,
-        details: validResult.array(),
-      });
+    return res.status(422).json({
+      code: 422,
+      status: 'FAILED',
+      message: messageCode.msgEnterInvalid,
+      details: validResult.array(),
+    });
   }
   // Extracting name, email, and password from the request body
   const { email, userId } = req.body;
@@ -454,14 +440,12 @@ const createLeaser = async (req, res) => {
     });
   } catch (error) {
     // An error occurred during signup process
-    return res
-      .status(500)
-      .json({
-        code: 500,
-        status: 'FAILED',
-        message: messageCode.msgInternalError,
-        details: error,
-      });
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+      details: error,
+    });
   }
 };
 
@@ -688,13 +672,11 @@ const issueRoyaltyPass = async (req, res) => {
     }
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res
-      .status(500)
-      .json({
-        code: 500,
-        status: 'FAILED',
-        message: messageCode.msgInternalError,
-      });
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+    });
   }
 };
 
@@ -882,13 +864,11 @@ const issueDeliveryChallan = async (req, res) => {
     }
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res
-      .status(500)
-      .json({
-        code: 500,
-        status: 'FAILED',
-        message: messageCode.msgInternalError,
-      });
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+    });
   }
 };
 
@@ -926,13 +906,11 @@ const verifyPocByID = async (req, res) => {
     }
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res
-      .status(500)
-      .json({
-        code: 500,
-        status: 'FAILED',
-        message: messageCode.msgInternalError,
-      });
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+    });
   }
 };
 
@@ -985,13 +963,11 @@ const verifyPocByIUrl = async (req, res) => {
     }
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res
-      .status(500)
-      .json({
-        code: 500,
-        status: 'FAILED',
-        message: messageCode.msgInternalError,
-      });
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+    });
   }
 };
 
@@ -1320,6 +1296,7 @@ const insertRoyaltyPassData = async (data) => {
       transactionHash: data?.transactionHash,
       url: data?.url || '',
       qrData: data?.qrData,
+      issuanceDate: new Date(),
     });
     // Save the new Issues document to the database
     const result = await newRoyaltyPass.save();
@@ -1363,6 +1340,7 @@ const insertDeliveryChallanData = async (data) => {
       transactionHash: data?.transactionHash,
       url: data?.url || '',
       qrData: data?.qrData,
+      issuanceDate: new Date(),
     });
     // Save the new Issues document to the database
     const result = await newDeliveryChallan.save();
