@@ -85,7 +85,7 @@ const wholeTracker = async (req, res) => {
     res.json({
       status: 200,
       data: {
-        deliveryNo,
+        deliveryChallan,
         royaltyPass,
         leaser,
       },
@@ -110,7 +110,6 @@ const royaltyPassDailyReport = async (req, res) => {
         $lt: new Date().setHours(23, 59, 59, 999),
       },
     });
-    console.log(count);
     res.json({
       status: 200,
       data: { count },
