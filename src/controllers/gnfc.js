@@ -2,18 +2,18 @@
 require('dotenv').config();
 
 // Import bcrypt for hashing passwords
-const bcrypt = require("bcrypt");
-const QRCode = require("qrcode");
+const bcrypt = require('bcrypt');
+const QRCode = require('qrcode');
 
 // Import custom authUtils module for JWT token generation
-const { generateJwtToken } = require("../common/authUtils");
+const { generateJwtToken } = require('../common/authUtils');
 
 // Import required modules
-const express = require("express");
+const express = require('express');
 const app = express(); // Create an instance of the Express application
-const path = require("path");
-const fs = require("fs");
-const { ethers } = require("ethers"); // Ethereum JavaScript library
+const path = require('path');
+const fs = require('fs');
+const { ethers } = require('ethers'); // Ethereum JavaScript library
 
 const leaser_role = process.env.POC_LEASER_ROLE;
 const distributor_role = process.env.POC_DISTRIBUTOR_ROLE;
@@ -21,19 +21,19 @@ const stockist_role = process.env.POC_STOCKIST_ROLE;
 
 const defaultLeaser = process.env.DEFAULT_LEASER;
 
-const existedRoles = [
-  'Leaser',
-  'Distributor',
-  'Stockist',
-  'Retailer',
-];
+const existedRoles = ['Leaser', 'Distributor', 'Stockist', 'Retailer'];
 
 // Import MongoDB models
-const { Admin, Stakeholders, RoyaltyPass, DeliveryChallan } = require("../config/schema");
+const {
+  Admin,
+  Stakeholders,
+  RoyaltyPass,
+  DeliveryChallan,
+} = require('../config/schema');
 
-const { validationResult } = require("express-validator");
+const { validationResult } = require('express-validator');
 
-var messageCode = require("../common/codes");
+var messageCode = require('../common/codes');
 
 // Importing functions from a custom module
 const {
@@ -52,7 +52,14 @@ const {
 const signup = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res.status(422).json({ code: 422, status: "FAILED", message: messageCode.msgEnterInvalid, details: validResult.array() });
+    return res
+      .status(422)
+      .json({
+        code: 422,
+        status: 'FAILED',
+        message: messageCode.msgEnterInvalid,
+        details: validResult.array(),
+      });
   }
   // Extracting name, email, and password from the request body
   var { name, email, password, role } = req.body;
@@ -64,20 +71,21 @@ const signup = async (req, res) => {
   try {
     // Check mongoose connection
     const dbStatus = await isDBConnected();
-    const dbStatusMessage = (dbStatus == true) ? messageCode.msgDbReady : messageCode.msgDbNotReady;
+    const dbStatusMessage =
+      dbStatus == true ? messageCode.msgDbReady : messageCode.msgDbNotReady;
     console.log(dbStatusMessage);
 
     // Checking if Stakeholder already exists
     const existingUser = await Stakeholders.findOne({
       email: email,
-      role: role
+      role: role,
     }).select('-password');
 
     if (existingUser) {
       // Admin with the provided email already exists
       res.json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgStakeholderExisted,
       });
       return; // Stop execution if user already exists
@@ -88,7 +96,7 @@ const signup = async (req, res) => {
     const userId = await generateAccount();
     let today = new Date();
     let todayString = today.getTime().toString(); // Convert epoch time to string
-    const roleId = 'GNFC' + todayString.slice(-8);
+    const roleId = 'AP' + todayString.slice(-10);
     // Save new user
     const newUser = new Stakeholders({
       name,
@@ -99,19 +107,26 @@ const signup = async (req, res) => {
       roleId: roleId,
       status: 'approved',
       approvedDate: new Date(),
-      issuedDate: new Date()
+      issuedDate: new Date(),
     });
 
     const savedUser = await newUser.save();
     res.json({
       code: 200,
-      status: "SUCCESS",
+      status: 'SUCCESS',
       message: messageCode.msgSignupSuccessful,
       data: savedUser,
     });
   } catch (error) {
     // An error occurred during signup process
-    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError, details: error });
+    return res
+      .status(500)
+      .json({
+        code: 500,
+        status: 'FAILED',
+        message: messageCode.msgInternalError,
+        details: error,
+      });
   }
 };
 
@@ -124,25 +139,33 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res.status(422).json({ code: 422, status: "FAILED", message: messageCode.msgEnterInvalid, details: validResult.array() });
+    return res
+      .status(422)
+      .json({
+        code: 422,
+        status: 'FAILED',
+        message: messageCode.msgEnterInvalid,
+        details: validResult.array(),
+      });
   }
   let { email, role, password } = req.body;
 
   // Check database connection
   const dbStatus = await isDBConnected();
-  const dbStatusMessage = (dbStatus == true) ? messageCode.msgDbReady : messageCode.msgDbNotReady;
+  const dbStatusMessage =
+    dbStatus == true ? messageCode.msgDbReady : messageCode.msgDbNotReady;
   console.log(dbStatusMessage);
 
-  // Checking if user exists 
+  // Checking if user exists
   const userExist = await Stakeholders.findOne({
     email: email,
-    role: role
+    role: role,
   }).select('-password');
 
   if (!userExist) {
     return res.json({
       code: 400,
-      status: "FAILED",
+      status: 'FAILED',
       message: messageCode.msgStakeholderNotfound,
     });
   }
@@ -159,7 +182,6 @@ const login = async (req, res) => {
   Stakeholders.find({ email })
     .then((data) => {
       if (data.length) {
-
         // User exists
         const hashedPassword = data[0].password;
         // Compare password hashes
@@ -178,7 +200,7 @@ const login = async (req, res) => {
               // Respond with success message and user details
               res.status(200).json({
                 code: 200,
-                status: "SUCCESS",
+                status: 'SUCCESS',
                 message: messageCode.msgLoginSuccessful,
                 data: {
                   JWTToken: JWTToken,
@@ -186,14 +208,14 @@ const login = async (req, res) => {
                   name: data[0]?.name,
                   email: data[0]?.email,
                   role: data[0]?.role,
-                  roleId: data[0]?.roleId
-                }
+                  roleId: data[0]?.roleId,
+                },
               });
             } else {
               // Incorrect password
               return res.json({
                 code: 400,
-                status: "FAILED",
+                status: 'FAILED',
                 message: messageCode.msgInvalidPassword,
               });
             }
@@ -202,16 +224,15 @@ const login = async (req, res) => {
             // Error occurred while comparing passwords
             res.json({
               code: 401,
-              status: "FAILED",
+              status: 'FAILED',
               message: messageCode.msgErrorOnPwdCompare,
             });
           });
-
       } else {
         // User with provided email not found
         res.json({
           code: 400,
-          status: "FAILED",
+          status: 'FAILED',
           message: messageCode.msgStakeholderNotfound,
         });
       }
@@ -220,7 +241,7 @@ const login = async (req, res) => {
       // Error occurred during login process
       res.json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgStakeholderNotfound,
       });
     });
@@ -235,19 +256,27 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res.status(422).json({ code: 422, status: "FAILED", message: messageCode.msgEnterInvalid, details: validResult.array() });
+    return res
+      .status(422)
+      .json({
+        code: 422,
+        status: 'FAILED',
+        message: messageCode.msgEnterInvalid,
+        details: validResult.array(),
+      });
   }
   let { email, role } = req.body;
   try {
     // Check mongoose connection
     const dbStatus = await isDBConnected();
-    const dbStatusMessage = (dbStatus == true) ? messageCode.msgDbReady : messageCode.msgDbNotReady;
+    const dbStatusMessage =
+      dbStatus == true ? messageCode.msgDbReady : messageCode.msgDbNotReady;
     console.log(dbStatusMessage);
 
     // Checking if User already exists
     const existingUser = await Stakeholders.findOne({
       email: email,
-      role: role
+      role: role,
     });
 
     // If admin doesn't exist, or if they are not logged in, return failure response
@@ -266,16 +295,15 @@ const logout = async (req, res) => {
     // Respond with success message upon successful logout
     return res.json({
       code: 200,
-      status: "SUCCESS",
-      message: messageCode.msgLogoutSuccessful
+      status: 'SUCCESS',
+      message: messageCode.msgLogoutSuccessful,
     });
-
   } catch (error) {
     // Error occurred during logout process, respond with failure message
     res.json({
       code: 400,
       status: 'FAILED',
-      message: messageCode.msgErrorInLogout
+      message: messageCode.msgErrorInLogout,
     });
   }
 };
@@ -289,7 +317,14 @@ const logout = async (req, res) => {
 const approveLeaser = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res.status(422).json({ code: 422, status: "FAILED", message: messageCode.msgEnterInvalid, details: validResult.array() });
+    return res
+      .status(422)
+      .json({
+        code: 422,
+        status: 'FAILED',
+        message: messageCode.msgEnterInvalid,
+        details: validResult.array(),
+      });
   }
   // Extracting name, email, and password from the request body
   const { email, userId } = req.body;
@@ -321,7 +356,10 @@ const approveLeaser = async (req, res) => {
     }
 
     const leaserRole = 'Leaser';
-    const isUserExist = await Stakeholders.findOne({ userId: userId, role: leaserRole }).select('-password');
+    const isUserExist = await Stakeholders.findOne({
+      userId: userId,
+      role: leaserRole,
+    }).select('-password');
     if (!isUserExist) {
       return res.json({
         code: 400,
@@ -331,8 +369,14 @@ const approveLeaser = async (req, res) => {
     }
 
     const assignedRole = existedRoles[0];
-    const approvedResponse = await grantOrRevokeRoleWithRetry(assignedRole, userId);
-    const addLeaser = await addLeaserWithRetry(isUserExist.roleId, isUserExist.userId);
+    const approvedResponse = await grantOrRevokeRoleWithRetry(
+      assignedRole,
+      userId
+    );
+    const addLeaser = await addLeaserWithRetry(
+      isUserExist.roleId,
+      isUserExist.userId
+    );
 
     if (approvedResponse && addLeaser) {
       isUserExist.status = 'approved';
@@ -342,21 +386,27 @@ const approveLeaser = async (req, res) => {
       // Respond with success message upon user approval
       return res.json({
         code: 200,
-        status: "SUCCESS",
+        status: 'SUCCESS',
         message: messageCode.msgApprovedSuccessful,
-        details: isUserExist
+        details: isUserExist,
       });
     }
     return res.json({
       code: 400,
-      status: "FAILED",
+      status: 'FAILED',
       message: messageCode.msgFailedOpsAtBlockchain,
-      details: isUserExist
+      details: isUserExist,
     });
-
   } catch (error) {
     // An error occurred during signup process
-    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError, details: error });
+    return res
+      .status(500)
+      .json({
+        code: 500,
+        status: 'FAILED',
+        message: messageCode.msgInternalError,
+        details: error,
+      });
   }
 };
 
@@ -369,7 +419,14 @@ const approveLeaser = async (req, res) => {
 const createLeaser = async (req, res) => {
   var validResult = validationResult(req);
   if (!validResult.isEmpty()) {
-    return res.status(422).json({ code: 422, status: "FAILED", message: messageCode.msgEnterInvalid, details: validResult.array() });
+    return res
+      .status(422)
+      .json({
+        code: 422,
+        status: 'FAILED',
+        message: messageCode.msgEnterInvalid,
+        details: validResult.array(),
+      });
   }
   // Extracting name, email, and password from the request body
   const { email, userId } = req.body;
@@ -391,11 +448,20 @@ const createLeaser = async (req, res) => {
         message: messageCode.msgPlsEnterValid,
       });
     }
-    const isLeaserExist = await Stakeholders.findOne({ userId: userId, role: existedRoles[0] });
-
+    const isLeaserExist = await Stakeholders.findOne({
+      userId: userId,
+      role: existedRoles[0],
+    });
   } catch (error) {
     // An error occurred during signup process
-    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError, details: error });
+    return res
+      .status(500)
+      .json({
+        code: 500,
+        status: 'FAILED',
+        message: messageCode.msgInternalError,
+        details: error,
+      });
   }
 };
 
@@ -406,45 +472,49 @@ const createLeaser = async (req, res) => {
  * @param {Object} res - Express response object.
  */
 const issueRoyaltyPass = async (req, res) => {
-
   const reqData = req?.body;
   try {
     await isDBConnected();
     if (reqData.email) {
-      const isLeaserExist = await Stakeholders.findOne({ email: reqData.email, role: existedRoles[0] });
+      const isLeaserExist = await Stakeholders.findOne({
+        email: reqData.email,
+        role: existedRoles[0],
+      });
       if (!isLeaserExist) {
         return res.status(400).json({
           code: 400,
-          status: "FAILED",
+          status: 'FAILED',
           message: messageCode.msgStakeholderNotApproved,
-          details: reqData?.email
+          details: reqData?.email,
         });
       }
     } else {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgStakeholderNotfound,
-        details: reqData?.email
+        details: reqData?.email,
       });
     }
 
     if (reqData?.royaltyPassNo) {
-      const isRoyaltyPassExist = await RoyaltyPass.findOne({ royaltyPassNo: reqData?.royaltyPassNo });
+      const isRoyaltyPassExist = await RoyaltyPass.findOne({
+        royaltyPassNo: reqData?.royaltyPassNo,
+      });
       if (isRoyaltyPassExist) {
         return res.status(400).json({
           code: 400,
-          status: "FAILED",
+          status: 'FAILED',
           message: messageCode.msgRoyaltyPassExisted,
-          details: reqData?.royaltyPassNo
+          details: reqData?.royaltyPassNo,
         });
       }
     } else {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgInvalidInput,
-        details: reqData?.royaltyPassNo
+        details: reqData?.royaltyPassNo,
       });
     }
     const fields = {
@@ -470,7 +540,7 @@ const issueRoyaltyPass = async (req, res) => {
       vehicleNumber: reqData?.vehicleNumber,
       weightBridgeName: reqData?.weightBridgeName,
       destination: reqData?.destination,
-      address: reqData?.address
+      address: reqData?.address,
     };
 
     // Hash sensitive fields
@@ -494,7 +564,7 @@ const issueRoyaltyPass = async (req, res) => {
       fields?.taluke,
       fields?.district,
       fields?.mineralName,
-      fields?.mineralGrade
+      fields?.mineralGrade,
     ];
 
     var convertedQuant = String(fields?.initialQuantatity);
@@ -510,22 +580,26 @@ const issueRoyaltyPass = async (req, res) => {
       fields?.vehicleType,
       fields?.vehicleNumber,
       fields?.weightBridgeName,
-      fields?.destination
+      fields?.destination,
     ];
 
     // Convert specific fields to strings
-    var convertedInputs = additionalInputs.map(item => {
+    var convertedInputs = additionalInputs.map((item) => {
       // Example: convert all items to strings except for specific conditions
-      return item === undefined || item === null ? "undefined" : String(item);
+      return item === undefined || item === null ? 'undefined' : String(item);
     });
 
-    console.log("The response", fields.royaltyPassNo, basicInputs, convertedInputs);
+    console.log(
+      'The response',
+      fields.royaltyPassNo,
+      basicInputs,
+      convertedInputs
+    );
 
     try {
-
       try {
         // Amoy contract address from environment variable
-        const abi = require("../config/pocAbi.json");
+        const abi = require('../config/pocAbi.json');
         const rpcUrl = process.env.AMOY_ENDPOINT;
         const contractAddress = process.env.POC_CONTRACT_ADDRESS;
 
@@ -546,7 +620,7 @@ const issueRoyaltyPass = async (req, res) => {
 
         var txHash = tx.hash;
       } catch (error) {
-        console.error("the error is", error);
+        console.error('the error is', error);
         return {
           code: 400,
           status: false,
@@ -574,44 +648,53 @@ const issueRoyaltyPass = async (req, res) => {
 
       var modifiedUrl = process.env.POC_SHORT_URL + fields.royaltyPassNo;
       var qrCodeImage = await QRCode.toDataURL(modifiedUrl, {
-        errorCorrectionLevel: "H",
+        errorCorrectionLevel: 'H',
         width: 450, // Adjust the width as needed
         height: 450, // Adjust the height as needed
       });
 
       // Generate encrypted URL with certificate data
-      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url: modifiedUrl };
+      const dataWithQRTransaction = {
+        ...fields,
+        transactionHash: txHash,
+        qrData: qrCodeImage,
+        url: modifiedUrl,
+      };
 
       const storeData = await insertRoyaltyPassData(dataWithQRTransaction);
 
       if (storeData) {
         return res.status(200).json({
           code: 200,
-          status: "SUCCESS",
+          status: 'SUCCESS',
           message: messageCode.msgRoyaltyIssueSuccess,
-          details: storeData
+          details: storeData,
         });
       } else {
         return res.status(400).json({
           code: 400,
-          status: "FAILED",
+          status: 'FAILED',
           message: messageCode.msgRoyaltyIssueUnsuccess,
-          details: reqData?.royaltyPassNo
+          details: reqData?.royaltyPassNo,
         });
       }
-
     } catch (error) {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgInvalidInput,
-        details: reqData?.royaltyPassNo
+        details: reqData?.royaltyPassNo,
       });
     }
-
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+    return res
+      .status(500)
+      .json({
+        code: 500,
+        status: 'FAILED',
+        message: messageCode.msgInternalError,
+      });
   }
 };
 
@@ -626,39 +709,43 @@ const issueDeliveryChallan = async (req, res) => {
   try {
     await isDBConnected();
     if (reqData.email) {
-      const isIssuerExist = await Stakeholders.findOne({ email: reqData.email });
+      const isIssuerExist = await Stakeholders.findOne({
+        email: reqData.email,
+      });
       if (!isIssuerExist) {
         return res.status(400).json({
           code: 400,
-          status: "FAILED",
+          status: 'FAILED',
           message: messageCode.msgStakeholderNotApproved,
-          details: reqData?.email
+          details: reqData?.email,
         });
       }
     } else {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgStakeholderNotfound,
-        details: reqData?.email
+        details: reqData?.email,
       });
     }
     if (reqData?.deliveryNo) {
-      const isDeliveryChallanExist = await DeliveryChallan.findOne({ deliveryNo: reqData?.deliveryNo });
+      const isDeliveryChallanExist = await DeliveryChallan.findOne({
+        deliveryNo: reqData?.deliveryNo,
+      });
       if (isDeliveryChallanExist) {
         return res.status(400).json({
           code: 400,
-          status: "FAILED",
+          status: 'FAILED',
           message: messageCode.msgDeliveryChallansExisted,
-          details: reqData?.deliveryNo
+          details: reqData?.deliveryNo,
         });
       }
     } else {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgInvalidInput,
-        details: reqData?.deliveryNo
+        details: reqData?.deliveryNo,
       });
     }
 
@@ -684,9 +771,8 @@ const issueDeliveryChallan = async (req, res) => {
       driverName: reqData?.driverName,
       driverLiceneceNo: reqData?.driverLiceneceNo,
       vehicleType: reqData?.vehicleType,
-      vehicleNumber: reqData?.vehicleNumber
+      vehicleNumber: reqData?.vehicleNumber,
     };
-
 
     // Hash sensitive fields
     var hashedFields = {};
@@ -714,7 +800,7 @@ const issueDeliveryChallan = async (req, res) => {
       fields?.village,
       fields?.taluke,
       fields?.district,
-      formatPincode
+      formatPincode,
     ];
 
     var additionalInputs = [
@@ -725,23 +811,23 @@ const issueDeliveryChallan = async (req, res) => {
       fields?.driverName,
       fields?.driverLiceneceNo,
       fields?.vehicleType,
-      fields?.vehicleNumber
+      fields?.vehicleNumber,
     ];
 
     // Convert specific fields to strings
-    var convertedInputs = basicInputs.map(item => {
+    var convertedInputs = basicInputs.map((item) => {
       // Example: convert all items to strings except for specific conditions
-      return item === undefined || item === null ? "undefined" : String(item);
+      return item === undefined || item === null ? 'undefined' : String(item);
     });
 
-    console.log("The response", convertedInputs, additionalInputs);
+    console.log('The response', convertedInputs, additionalInputs);
 
     try {
       var { txHash, txFee } = await issueDeliveryChallanWithRetry(
         fields.deliveryNo,
         convertedInputs,
         additionalInputs,
-        combinedHash,
+        combinedHash
       );
 
       if (!txHash) {
@@ -756,45 +842,53 @@ const issueDeliveryChallan = async (req, res) => {
       var modifiedUrl = process.env.POC_SHORT_URL + fields.deliveryNo;
 
       var qrCodeImage = await QRCode.toDataURL(modifiedUrl, {
-        errorCorrectionLevel: "H",
+        errorCorrectionLevel: 'H',
         width: 450, // Adjust the width as needed
         height: 450, // Adjust the height as needed
       });
 
       // Generate encrypted URL with certificate data
-      const dataWithQRTransaction = { ...fields, transactionHash: txHash, qrData: qrCodeImage, url: modifiedUrl };
+      const dataWithQRTransaction = {
+        ...fields,
+        transactionHash: txHash,
+        qrData: qrCodeImage,
+        url: modifiedUrl,
+      };
 
       const storeData = await insertDeliveryChallanData(dataWithQRTransaction);
 
       if (storeData) {
         return res.status(200).json({
           code: 200,
-          status: "SUCCESS",
+          status: 'SUCCESS',
           message: messageCode.msgDeliveryChallanSuccess,
-          details: storeData
+          details: storeData,
         });
       } else {
         return res.status(400).json({
           code: 400,
-          status: "FAILED",
+          status: 'FAILED',
           message: messageCode.msgDeliveryChallanUnsuccess,
-          details: reqData?.deliveryNo
+          details: reqData?.deliveryNo,
         });
       }
-
     } catch (error) {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgInvalidInput,
-        details: reqData?.deliveryNo
+        details: reqData?.deliveryNo,
       });
     }
-
-
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+    return res
+      .status(500)
+      .json({
+        code: 500,
+        status: 'FAILED',
+        message: messageCode.msgInternalError,
+      });
   }
 };
 
@@ -809,8 +903,8 @@ const verifyPocByID = async (req, res) => {
   if (!requestId) {
     return res.status(400).json({
       code: 400,
-      status: "FAILED",
-      message: messageCode.msgInvalidInput
+      status: 'FAILED',
+      message: messageCode.msgInvalidInput,
     });
   }
   try {
@@ -818,21 +912,27 @@ const verifyPocByID = async (req, res) => {
     if (isIdExist === false) {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgNoMatchFound,
-        details: requestId
+        details: requestId,
       });
     } else {
       return res.status(200).json({
         code: 200,
-        status: "SUCCESS",
+        status: 'SUCCESS',
         message: messageCode.msgMatchResultsFound,
-        details: isIdExist
+        details: isIdExist,
       });
     }
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+    return res
+      .status(500)
+      .json({
+        code: 500,
+        status: 'FAILED',
+        message: messageCode.msgInternalError,
+      });
   }
 };
 
@@ -848,8 +948,8 @@ const verifyPocByIUrl = async (req, res) => {
   if (!requestUrl) {
     return res.status(400).json({
       code: 400,
-      status: "FAILED",
-      message: messageCode.msgInvalidInput
+      status: 'FAILED',
+      message: messageCode.msgInvalidInput,
     });
   }
   // Parse the URL
@@ -862,8 +962,8 @@ const verifyPocByIUrl = async (req, res) => {
   if (!getId) {
     return res.status(400).json({
       code: 400,
-      status: "FAILED",
-      message: messageCode.msgInvalidUrl
+      status: 'FAILED',
+      message: messageCode.msgInvalidUrl,
     });
   }
   try {
@@ -871,56 +971,65 @@ const verifyPocByIUrl = async (req, res) => {
     if (isIdExist === false) {
       return res.status(400).json({
         code: 400,
-        status: "FAILED",
+        status: 'FAILED',
         message: messageCode.msgNoMatchFound,
-        details: getId
+        details: getId,
       });
     } else {
       return res.status(200).json({
         code: 200,
-        status: "SUCCESS",
+        status: 'SUCCESS',
         message: messageCode.msgMatchResultsFound,
-        details: isIdExist
+        details: isIdExist,
       });
     }
-
   } catch (error) {
     // Handle any errors that occur during token verification or validation
-    return res.status(500).json({ code: 500, status: "FAILED", message: messageCode.msgInternalError });
+    return res
+      .status(500)
+      .json({
+        code: 500,
+        status: 'FAILED',
+        message: messageCode.msgInternalError,
+      });
   }
 };
 
-
-const grantOrRevokeRoleWithRetry = async (roleStatus, role, account, retryCount = 3) => {
+const grantOrRevokeRoleWithRetry = async (
+  roleStatus,
+  role,
+  account,
+  retryCount = 3
+) => {
   const newContract = await connectToPolygonPoc();
   if (!newContract) {
-    return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
+    return { code: 400, status: 'FAILED', message: messageCode.msgRpcFailed };
   }
   try {
     // Issue Single Certifications on Blockchain
-    if (roleStatus == "grant") {
-      var tx = await newContract.grantRole(
-        role,
-        account
-      );
-    } else if (roleStatus == "revoke") {
-      var tx = await newContract.revokeRole(
-        role,
-        account
-      );
+    if (roleStatus == 'grant') {
+      var tx = await newContract.grantRole(role, account);
+    } else if (roleStatus == 'revoke') {
+      var tx = await newContract.revokeRole(role, account);
     } else {
       return null;
     }
     var txHash = tx.hash;
 
     return txHash;
-
   } catch (error) {
     if (retryCount > 0 && error.code === 'ETIMEDOUT') {
-      console.log(`Connection timed out. Retrying... Attempts left: ${retryCount}`);
+      console.log(
+        `Connection timed out. Retrying... Attempts left: ${retryCount}`
+      );
       // Retry after a delay (e.g., 2 seconds)
       await holdExecution(2000);
-      return grantOrRevokeRoleWithRetry(roleStatus, role, account, retryCount - 1);
+      return grantOrRevokeRoleWithRetry(
+        roleStatus,
+        role,
+        account,
+        retryCount - 1
+      );
     } else if (error.code === 'NONCE_EXPIRED') {
       // Extract and handle the error reason
       // console.log("Error reason:", error.reason);
@@ -940,39 +1049,39 @@ const grantOrRevokeRoleWithRetry = async (roleStatus, role, account, retryCount 
 const addLeaserWithRetry = async (leaser, address, retryCount = 3) => {
   const newContract = await connectToPolygonPoc();
   if (!newContract) {
-    return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
+    return { code: 400, status: 'FAILED', message: messageCode.msgRpcFailed };
   }
   try {
     // Issue Single Certifications on Blockchain
-    const tx = await newContract.createLease(
-      leaser,
-      address
-    );
+    const tx = await newContract.createLease(leaser, address);
 
     let txHash = tx.hash;
     //   let txFee = await fetchOrEstimateTransactionFee(tx);
     if (!txHash) {
       if (retryCount > 0) {
-        console.log(`Unable to process the transaction. Retrying... Attempts left: ${retryCount}`);
+        console.log(
+          `Unable to process the transaction. Retrying... Attempts left: ${retryCount}`
+        );
         // Retry after a delay (e.g., 1.5 seconds)
         await holdExecution(1500);
         return issueLeaseWithRetry(leaser, address, retryCount - 1);
       } else {
         return {
           txHash: null,
-          txFee: null
+          txFee: null,
         };
       }
     }
 
     return {
       txHash: txHash,
-      txFee: null
+      txFee: null,
     };
-
   } catch (error) {
     if (retryCount > 0 && error.code === 'ETIMEDOUT') {
-      console.log(`Connection timed out. Retrying... Attempts left: ${retryCount}`);
+      console.log(
+        `Connection timed out. Retrying... Attempts left: ${retryCount}`
+      );
       // Retry after a delay (e.g., 2 seconds)
       await holdExecution(2000);
       return issueLeaseWithRetry(leaser, address, retryCount - 1);
@@ -981,31 +1090,36 @@ const addLeaserWithRetry = async (leaser, address, retryCount = 3) => {
       // console.log("Error reason:", error.reason);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     } else if (error.reason) {
       // Extract and handle the error reason
       // console.log("Error reason:", error.reason);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     } else {
       // If there's no specific reason provided, handle the error generally
       // console.error(messageCode.msgFailedOpsAtBlockchain, error);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     }
   }
 };
 
-
-const issueRoyaltyPassWithRetry = async (royaltyPassId, basicInputs, additionalInputs, hash, retryCount = 3) => {
+const issueRoyaltyPassWithRetry = async (
+  royaltyPassId,
+  basicInputs,
+  additionalInputs,
+  hash,
+  retryCount = 3
+) => {
   // const newContract = await connectToPolygonPoc();
   if (!newContract) {
-    return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
+    return { code: 400, status: 'FAILED', message: messageCode.msgRpcFailed };
   }
 
   try {
@@ -1021,58 +1135,79 @@ const issueRoyaltyPassWithRetry = async (royaltyPassId, basicInputs, additionalI
     //   let txFee = await fetchOrEstimateTransactionFee(tx);
     if (!txHash) {
       if (retryCount > 0) {
-        console.log(`Unable to process the transaction. Retrying... Attempts left: ${retryCount}`);
+        console.log(
+          `Unable to process the transaction. Retrying... Attempts left: ${retryCount}`
+        );
         // Retry after a delay (e.g., 1.5 seconds)
         await holdExecution(1500);
-        return issueRoyaltyPassWithRetry(royaltyPassId, basicInputs, additionalInputs, hash, retryCount - 1);
+        return issueRoyaltyPassWithRetry(
+          royaltyPassId,
+          basicInputs,
+          additionalInputs,
+          hash,
+          retryCount - 1
+        );
       } else {
         return {
           txHash: null,
-          txFee: null
+          txFee: null,
         };
       }
     }
 
     return {
       txHash: txHash,
-      txFee: null
+      txFee: null,
     };
-
   } catch (error) {
     if (retryCount > 0 && error.code === 'ETIMEDOUT') {
-      console.log(`Connection timed out. Retrying... Attempts left: ${retryCount}`);
+      console.log(
+        `Connection timed out. Retrying... Attempts left: ${retryCount}`
+      );
       // Retry after a delay (e.g., 2 seconds)
       await holdExecution(2000);
-      return issueRoyaltyPassWithRetry(royaltyPassId, basicInputs, additionalInputs, hash, retryCount - 1);
+      return issueRoyaltyPassWithRetry(
+        royaltyPassId,
+        basicInputs,
+        additionalInputs,
+        hash,
+        retryCount - 1
+      );
     } else if (error.code === 'NONCE_EXPIRED') {
       // Extract and handle the error reason
-      console.error("Error reason:", error.reason);
+      console.error('Error reason:', error.reason);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     } else if (error.reason) {
       // Extract and handle the error reason
-      console.error("Error reason:", error.reason);
+      console.error('Error reason:', error.reason);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     } else {
       // If there's no specific reason provided, handle the error generally
       console.error(messageCode.msgFailedOpsAtBlockchain, error);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     }
   }
 };
 
-const issueDeliveryChallanWithRetry = async (deliveryChallanId, basicInputs, additionalInputs, hash, retryCount = 3) => {
+const issueDeliveryChallanWithRetry = async (
+  deliveryChallanId,
+  basicInputs,
+  additionalInputs,
+  hash,
+  retryCount = 3
+) => {
   const newContract = await connectToPolygonPoc();
   if (!newContract) {
-    return ({ code: 400, status: "FAILED", message: messageCode.msgRpcFailed });
+    return { code: 400, status: 'FAILED', message: messageCode.msgRpcFailed };
   }
   // console.log("Contract inputs", newContract, deliveryChallanId, basicInputs, additionalInputs, hash);
   try {
@@ -1089,49 +1224,64 @@ const issueDeliveryChallanWithRetry = async (deliveryChallanId, basicInputs, add
     //   let txFee = await fetchOrEstimateTransactionFee(tx);
     if (!txHash) {
       if (retryCount > 0) {
-        console.log(`Unable to process the transaction. Retrying... Attempts left: ${retryCount}`);
+        console.log(
+          `Unable to process the transaction. Retrying... Attempts left: ${retryCount}`
+        );
         // Retry after a delay (e.g., 1.5 seconds)
         await holdExecution(1500);
-        return issueDeliveryChallanWithRetry(deliveryChallanId, basicInputs, additionalInputs, hash, retryCount - 1);
+        return issueDeliveryChallanWithRetry(
+          deliveryChallanId,
+          basicInputs,
+          additionalInputs,
+          hash,
+          retryCount - 1
+        );
       } else {
         return {
           txHash: null,
-          txFee: null
+          txFee: null,
         };
       }
     }
 
     return {
       txHash: txHash,
-      txFee: null
+      txFee: null,
     };
-
   } catch (error) {
     if (retryCount > 0 && error.code === 'ETIMEDOUT') {
-      console.log(`Connection timed out. Retrying... Attempts left: ${retryCount}`);
+      console.log(
+        `Connection timed out. Retrying... Attempts left: ${retryCount}`
+      );
       // Retry after a delay (e.g., 2 seconds)
       await holdExecution(2000);
-      return issueDeliveryChallanWithRetry(deliveryChallanId, basicInputs, additionalInputs, hash, retryCount - 1);
+      return issueDeliveryChallanWithRetry(
+        deliveryChallanId,
+        basicInputs,
+        additionalInputs,
+        hash,
+        retryCount - 1
+      );
     } else if (error.code === 'NONCE_EXPIRED') {
       // Extract and handle the error reason
       // console.log("Error reason:", error.reason);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     } else if (error.reason) {
       // Extract and handle the error reason
       // console.log("Error reason:", error.reason);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     } else {
       // If there's no specific reason provided, handle the error generally
       // console.error(messageCode.msgFailedOpsAtBlockchain, error);
       return {
         txHash: null,
-        txFee: null
+        txFee: null,
       };
     }
   }
@@ -1169,14 +1319,14 @@ const insertRoyaltyPassData = async (data) => {
       address: data?.address,
       transactionHash: data?.transactionHash,
       url: data?.url || '',
-      qrData: data?.qrData
+      qrData: data?.qrData,
     });
     // Save the new Issues document to the database
     const result = await newRoyaltyPass.save();
     return result;
   } catch (error) {
     // Handle errors related to database connection or insertion
-    console.error("Error connecting to MongoDB:", error);
+    console.error('Error connecting to MongoDB:', error);
     return false;
   }
 };
@@ -1212,24 +1362,27 @@ const insertDeliveryChallanData = async (data) => {
       vehicleNumber: data?.vehicleNumber,
       transactionHash: data?.transactionHash,
       url: data?.url || '',
-      qrData: data?.qrData
+      qrData: data?.qrData,
     });
     // Save the new Issues document to the database
     const result = await newDeliveryChallan.save();
     return result;
   } catch (error) {
     // Handle errors related to database connection or insertion
-    console.error("Error connecting to MongoDB:", error);
+    console.error('Error connecting to MongoDB:', error);
     return false;
   }
-
 };
 
 const isGnfcIdExist = async (id) => {
   try {
     await isDBConnected();
-    const isRoyaltyPassIdExist = await RoyaltyPass.findOne({ royaltyPassNo: id });
-    const isDeliveryChallanExist = await DeliveryChallan.findOne({ deliveryNo: id });
+    const isRoyaltyPassIdExist = await RoyaltyPass.findOne({
+      royaltyPassNo: id,
+    });
+    const isDeliveryChallanExist = await DeliveryChallan.findOne({
+      deliveryNo: id,
+    });
     if (isRoyaltyPassIdExist) {
       return isRoyaltyPassIdExist;
     } else if (isDeliveryChallanExist) {
@@ -1238,7 +1391,7 @@ const isGnfcIdExist = async (id) => {
       return false;
     }
   } catch (error) {
-    console.error("An error occured", error);
+    console.error('An error occured', error);
     return false;
   }
 };
@@ -1256,5 +1409,5 @@ module.exports = {
 
   verifyPocByID,
 
-  verifyPocByIUrl
-}
+  verifyPocByIUrl,
+};

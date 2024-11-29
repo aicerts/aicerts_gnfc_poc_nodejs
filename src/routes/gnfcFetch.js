@@ -110,10 +110,7 @@ router.get('/leaser', gnfcController.leaserList);
 //  */
 
 // Royalty pass list based on lease id
-router.get(
-  '/royalty-pass/:leaserId',
-  gnfcController.royaltyPassList
-);
+router.get('/royalty-pass/:leaserId', gnfcController.royaltyPassList);
 
 // Delivery challan list based on royalty pass
 router.get(
@@ -122,9 +119,21 @@ router.get(
 );
 
 // Whole track record based on delivery challan
+router.get('/whole-record/:deliveryChallan', gnfcController.wholeTracker);
+
+//Daily royalty pass issuance counter
+router.get('/daily-royalty-pass/report', gnfcController.royaltyPassDailyReport);
+
+//Weekly royalty pass issuance counter
 router.get(
-  '/whole-record/:deliveryChallan',
-  gnfcController.wholeTracker
+  '/weekly-royalty-pass/report',
+  gnfcController.royaltyPassWeeklyReport
+);
+
+//monthly royalty pass issuance counter
+router.get(
+  '/monthly-royalty-pass/report',
+  gnfcController.royaltyPassMonthlyReport
 );
 
 module.exports = router;

@@ -95,10 +95,90 @@ const wholeTracker = async (req, res) => {
   }
 };
 
+const royaltyPassDailyReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    // const start = new Date();
+    // start.setHours(0, 0, 0, 0);
+
+    // const end = new Date();
+    // end.setHours(23, 59, 59, 999);
+
+    const count = await RoyaltyPass.countDocuments({
+      issuedDate: {
+        $gte: new Date().setHours(0, 0, 0, 0),
+        $lt: new Date().setHours(23, 59, 59, 999),
+      },
+    });
+    console.log(count);
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const royaltyPassWeeklyReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    const start = new Date();
+    const day = start.getDay();
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    const weekStart = new Date(start.setDate(diff));
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const count = await RoyaltyPass.countDocuments({
+      issuedDate: {
+        $gte: weekStart,
+        $lt: weekEnd,
+      },
+    });
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const royaltyPassMonthlyReport = async (req, res) => {
+  try {
+    await isDBConnected();
+    const start = new Date();
+    const monthStart = new Date(start.getFullYear(), start.getMonth(), 1);
+    monthStart.setHours(0, 0, 0, 0);
+
+    const monthEnd = new Date(monthStart);
+    monthEnd.setMonth(monthEnd.getMonth() + 1);
+    monthEnd.setHours(23, 59, 59, 999);
+
+    const count = await RoyaltyPass.countDocuments({
+      issuedDate: {
+        $gte: monthStart,
+        $lt: monthEnd,
+      },
+    });
+    res.json({
+      status: 200,
+      data: { count },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   leaserList,
   leaserById,
   royaltyPassList,
   deliveryChallanList,
   wholeTracker,
+  royaltyPassDailyReport,
+  royaltyPassWeeklyReport,
+  royaltyPassMonthlyReport,
 };
