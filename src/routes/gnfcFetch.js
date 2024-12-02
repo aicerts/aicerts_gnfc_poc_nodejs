@@ -166,4 +166,22 @@ router.get(
   gnfcController.deliveryChallanAnnualReport
 );
 
+// To generate Royalty Pass PDF
+router.get(
+  '/verification-pdf/royalty-pass/:royaltyPassNo',
+  gnfcController.generateRoyaltyPassVerificationPDF
+);
+
+// To generate Delivery challan PDF
+router.get(
+  '/verification-pdf/delivery-challan/:deliveryChallan',
+  gnfcController.generateDeliveryChallanVerificationPDF
+);
+
+// To generate Whole record PDF based on delivery challan
+router.get(
+  '/verification-pdf/whole-record/:deliveryChallan',
+  gnfcController.generateWholeRecordVerificationPDF
+);
+
 module.exports = router;

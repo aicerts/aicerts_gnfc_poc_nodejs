@@ -252,6 +252,7 @@ const RoyaltyPassSchema = new mongoose.Schema({
   issuedDate: { type: Date, default: Date.now },
   leaseValidUpto: { type: Date },
   SSPNumber: { type: String },
+  surveyNo: { type: String },
   village: { type: String },
   taluke: { type: String },
   district: { type: String },
