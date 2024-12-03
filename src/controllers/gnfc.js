@@ -97,6 +97,7 @@ const signup = async (req, res) => {
     let today = new Date();
     let todayString = today.getTime().toString(); // Convert epoch time to string
     var _roleId = 'AP' + todayString.slice(-10);
+    var roleId = (roleId) ? roleId : _roleId;
     // Save new user
     const newUser = new Stakeholders({
       name,
@@ -104,7 +105,7 @@ const signup = async (req, res) => {
       password: hashedPassword,
       role: role,
       userId: userId,
-      roleId: roleId || _roleId,
+      roleId: roleId,
       status: 'approved',
       approvedDate: new Date(),
       issuedDate: new Date(),
@@ -156,7 +157,7 @@ const login = async (req, res) => {
   const userExist = await Stakeholders.findOne({
     email: email,
     role: role,
-  }).select('-password');
+  });
 
   if (!userExist) {
     return res.json({

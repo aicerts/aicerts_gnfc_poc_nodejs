@@ -22,7 +22,7 @@ const validationRoute = require("../common/validationRoutes");
  *                 description: The email address of the user.
  *               role:
  *                 type: string
- *                 description: The role ( Leaser / Stockist / Distributor / Retailor / Company ) of the user.
+ *                 description: The role ( Admin / Leaser / Stockist ) of the user.
  *               password:
  *                 type: string
  *                 description: The password for user authentication.
@@ -110,7 +110,10 @@ router.post('/user-login', validationRoute.login , gnfcController.login);
  *                 description: User's email address
  *               role:
  *                 type: string
- *                 description: User's role ( Leaser / Stockist / Distributor / Retailor / Company )
+ *                 description: User's role ( Admin / Leaser / Stockist )
+ *               roleId:
+ *                 type: string
+ *                 description: User's roleId ( Admin / Leaser / Stockist )
  *               password:
  *                 type: string
  *                 description: User's password
