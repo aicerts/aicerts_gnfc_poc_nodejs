@@ -60,11 +60,12 @@ const signup = async (req, res) => {
     });
   }
   // Extracting name, email, and password from the request body
-  var { name, email, password, role } = req.body;
+  var { name, email, password, role, roleId } = req.body;
   name = name.trim();
   email = email.trim();
   password = password.trim();
   role = role.trim();
+  roleId = roleId.trim();
 
   try {
     // Check mongoose connection
@@ -77,6 +78,7 @@ const signup = async (req, res) => {
     const existingUser = await Stakeholders.findOne({
       email: email,
       role: role,
+      roleId: roleId
     }).select('-password');
 
     if (existingUser) {
@@ -94,7 +96,7 @@ const signup = async (req, res) => {
     const userId = await generateAccount();
     let today = new Date();
     let todayString = today.getTime().toString(); // Convert epoch time to string
-    const roleId = 'AP' + todayString.slice(-10);
+    var _roleId = 'AP' + todayString.slice(-10);
     // Save new user
     const newUser = new Stakeholders({
       name,
@@ -102,7 +104,7 @@ const signup = async (req, res) => {
       password: hashedPassword,
       role: role,
       userId: userId,
-      roleId: roleId,
+      roleId: roleId || _roleId,
       status: 'approved',
       approvedDate: new Date(),
       issuedDate: new Date(),
