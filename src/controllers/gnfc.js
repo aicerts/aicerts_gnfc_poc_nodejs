@@ -82,7 +82,7 @@ const signup = async (req, res) => {
     }).select('-password');
 
     if (existingUser) {
-      // Admin with the provided email already exists
+      // Admin / Leaser / Stockist with the provided details already exists
       res.json({
         code: 400,
         status: 'FAILED',
