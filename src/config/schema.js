@@ -276,6 +276,7 @@ const RoyaltyPassSchema = new mongoose.Schema({
   imageUrl: { type: String, default: '' },
   qrData: { type: String },
   issuanceDate: { type: Date },
+  comment: { type: String, default: '' }
 });
 
 // Schema for Delivery Challan
@@ -307,6 +308,7 @@ const DeliveryChallanSchema = new mongoose.Schema({
   imageUrl: { type: String, default: '' },
   qrData: { type: String },
   issuanceDate: { type: Date },
+  comment: { type: String, default: '' }
 });
 
 const Admin = mongoose.model('Admin', AdminSchema);
