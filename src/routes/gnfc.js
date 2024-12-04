@@ -309,10 +309,10 @@ router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
  *                 description: Enter valid leaserId
  *               issuedDate:
  *                 type: string
- *                 description: Enter valid issued Date
+ *                 description: Enter valid issued Date (format 2024-12-20T23:59:59.999Z)
  *               leaseValidUpto:
  *                 type: string
- *                 description: Enter valid leaseValidUpto
+ *                 description: Enter valid leaseValidUpto Date (format 2024-12-20T23:59:59.999Z)
  *               SSPNumber:
  *                 type: string
  *                 description: Enter valid SSPNumber
@@ -336,10 +336,10 @@ router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
  *                 description: Enter valid initialQuantatity
  *               journeyStartDate:
  *                 type: string
- *                 description: Enter valid journeyStartDate
+ *                 description: Enter valid journeyStartDate (format 2024-12-20T23:59:59.999Z)
  *               journeyEndDate:
  *                 type: string
- *                 description: Enter valid journeyEndDate
+ *                 description: Enter valid journeyEndDate (format 2024-12-20T23:59:59.999Z)
  *               distance:
  *                 type: string
  *                 description: Enter valid distance
@@ -445,7 +445,7 @@ router.post('/user-logout', validationRoute.emailCheck, gnfcController.logout);
  *                   example: An error occurred
  */
 
-router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueRoyaltyPass);
+router.post('/issue-royalty-pass', validationRoute.emailCheck, gnfcController.issueRoyaltyPass);
 
 /**
  * @swagger
@@ -514,10 +514,10 @@ router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueR
  *                 description: Enter valid transportationDistance
  *               journeyStartDate:
  *                 type: string
- *                 description: Enter valid journeyStartDate
+ *                 description: Enter valid journeyStartDate (format 2024-12-20T23:59:59.999Z)
  *               journeyEndDate:
  *                 type: string
- *                 description: Enter valid journeyEndDate
+ *                 description: Enter valid journeyEndDate (format 2024-12-20T23:59:59.999Z)
  *               driverName:
  *                 type: string
  *                 description: Enter valid driverName
@@ -604,7 +604,77 @@ router.post('/issue-royalty-pass', validationRoute.signUp, gnfcController.issueR
  *                   example: An error occurred
  */
 
-router.post('/issue-delivery-challan', validationRoute.signUp, gnfcController.issueDeliveryChallan);
+router.post('/issue-delivery-challan', validationRoute.emailCheck, gnfcController.issueDeliveryChallan);
+
+/**
+ * @swagger
+ * /api/poc-add-comment:
+ *   post:
+ *     summary: Add comment to provided ID (Royalty pass / Delivery challan).
+ *     description: API to add comment for Royalty pass ID / Delivery challan ID
+ *     tags: [GNFC POC]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The Royalty pass ID / Delivery challan ID.
+ *               comment:
+ *                 type: string
+ *                 description: The comment for Royalty pass / Delivery challan.
+ *             required:
+ *               - id
+ *               - comment
+ *     responses:
+ *       '200':
+ *         description: Successfully added comment
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (SUCCESS).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (Comment added to Royalty pass / Delivery challan).
+ *                 details:
+ *                   type: string[]
+ *                   description: Result data.
+ *       '400':
+ *         description: Invalid input or empty id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (FAILED).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (Empty id supplied).
+ *       '500':
+ *         description: An error occurred during login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   description: Status of the operation (FAILED).
+ *                 message:
+ *                   type: string
+ *                   description: Result message (An error occurred during the comment).
+ */
+
+router.post('/poc-add-comment', gnfcController.addUserComment);
 
 /**
  * @swagger

@@ -77,7 +77,7 @@ const signup = async (req, res) => {
     const roleIdExist = await Stakeholders.findOne({
       roleId: roleId
     }).select('-password');
-    if(roleIdExist){
+    if (roleIdExist) {
       res.json({
         code: 400,
         status: 'FAILED',
@@ -619,12 +619,11 @@ const issueRoyaltyPass = async (req, res) => {
         var txHash = tx.hash;
       } catch (error) {
         console.error('the error is', error);
-        return {
+        return res.status(400).json({
           code: 400,
-          status: false,
-          message: messageCode.msgFailedToIssueAfterRetry,
-          details: fields.royaltyPassNo,
-        };
+          status: 'FAILED',
+          message: error,
+        });
       }
 
       // var { txHash, txFee } = await issueRoyaltyPassWithRetry(
@@ -635,12 +634,12 @@ const issueRoyaltyPass = async (req, res) => {
       // );
       // var polygonLink = `https://${process.env.NETWORK}/tx/${txHash}`;
       if (!txHash) {
-        return {
+        return res.status(400).json({
           code: 400,
-          status: false,
+          status: 'FAILED',
           message: messageCode.msgFailedToIssueAfterRetry,
           details: fields.royaltyPassNo,
-        };
+        });
       }
       // var txHash = combinedHash;
 
@@ -885,6 +884,103 @@ const issueDeliveryChallan = async (req, res) => {
     });
   }
 };
+
+/**
+ * API call for add comment to Royalty pass / Delivery challan.
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+const addUserComment = async (req, res) => {
+  const requestId = req?.body.id;
+  const comment = req?.body.comment;
+  try {
+    await isDBConnected();
+    const isRoyaltyPassIdExist = await RoyaltyPass.findOne({
+      royaltyPassNo: requestId
+    });
+    const isDeliveryChallanExist = await DeliveryChallan.findOne({
+      deliveryNo: requestId
+    });
+
+    if (!isRoyaltyPassIdExist && !isDeliveryChallanExist) {
+      return res.status(400).json({
+        code: 400,
+        status: 'FAILED',
+        message: messageCode.msgNoMatchFound,
+        details: requestId,
+      });
+    }
+
+    if (isRoyaltyPassIdExist) {
+      if (!isRoyaltyPassIdExist.comment || isRoyaltyPassIdExist.comment == '') {
+        var { txHash, txFee } = await addCommentWithRetry(requestId, comment);
+        if(!txHash){
+          return res.status(400).json({
+            code: 400,
+            status: 'FAILED',
+            message: messageCode.msgFailedToIssueAfterRetry
+          });
+        }
+        isRoyaltyPassIdExist.comment = comment;
+        await isRoyaltyPassIdExist.save();
+        return res.status(200).json({
+          code: 200,
+          status: 'SUCCESS',
+          message: messageCode.msgCommentAdded,
+          details: comment
+        });
+      } else {
+        return res.status(400).json({
+          code: 400,
+          status: 'FAILED',
+          message: messageCode.msgCommentExisted,
+          details: isRoyaltyPassIdExist.comment
+        });
+      }
+    } else if (isDeliveryChallanExist) {
+      if (!isDeliveryChallanExist.comment || isDeliveryChallanExist.comment == '') {
+        var { txHash, txFee } = await addCommentWithRetry(requestId, comment);
+        if(!txHash){
+          return res.status(400).json({
+            code: 400,
+            status: 'FAILED',
+            message: messageCode.msgFailedToIssueAfterRetry
+          });
+        }
+        isDeliveryChallanExist.comment = comment;
+        await isDeliveryChallanExist.save();
+        return res.status(200).json({
+          code: 200,
+          status: 'SUCCESS',
+          message: messageCode.msgCommentAdded,
+          details: comment
+        });
+      } else {
+        return res.status(400).json({
+          code: 400,
+          status: 'FAILED',
+          message: messageCode.msgCommentExisted,
+          details: isDeliveryChallanExist.comment
+        });
+      }
+    } else {
+      return res.status(400).json({
+        code: 400,
+        status: 'FAILED',
+        message: messageCode.msgNoMatchFound
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      code: 500,
+      status: 'FAILED',
+      message: messageCode.msgInternalError,
+      details: error,
+    });
+  }
+};
+
 
 /**
  * API call for verify Royalty pass ID / Delivery challan ID
@@ -1277,6 +1373,87 @@ const issueDeliveryChallanWithRetry = async (
   }
 };
 
+const addCommentWithRetry = async (
+  inputId,
+  comment,
+  retryCount = 3
+) => {
+  const newContract = await connectToPolygonPoc();
+  if (!newContract) {
+    return { code: 400, status: 'FAILED', message: messageCode.msgRpcFailed };
+  }
+  // console.log("Contract inputs", newContract, deliveryChallanId, basicInputs, additionalInputs, hash);
+  try {
+    // Issue Single Certifications on Blockchain
+    const tx = await newContract.setCommentToRoyaltypassOrDeliverychallan(
+      inputId,
+      comment
+    );
+
+    let txHash = tx.hash;
+    let txFee = null;
+    //   let txFee = await fetchOrEstimateTransactionFee(tx);
+    if (!txHash) {
+      if (retryCount > 0) {
+        console.log(
+          `Unable to process the transaction. Retrying... Attempts left: ${retryCount}`
+        );
+        // Retry after a delay (e.g., 1.5 seconds)
+        await holdExecution(1500);
+        return addCommentWithRetry(
+          inputId,
+          comment,
+          retryCount - 1
+        );
+      } else {
+        return {
+          txHash: null,
+          txFee: null,
+        };
+      }
+    }
+
+    return {
+      txHash: txHash,
+      txFee: null,
+    };
+  } catch (error) {
+    if (retryCount > 0 && error.code === 'ETIMEDOUT') {
+      console.log(
+        `Connection timed out. Retrying... Attempts left: ${retryCount}`
+      );
+      // Retry after a delay (e.g., 2 seconds)
+      await holdExecution(2000);
+      return addCommentWithRetry(
+        inputId,
+        comment,
+        retryCount - 1
+      );
+    } else if (error.code === 'NONCE_EXPIRED') {
+      // Extract and handle the error reason
+      // console.log("Error reason:", error.reason);
+      return {
+        txHash: null,
+        txFee: null,
+      };
+    } else if (error.reason) {
+      // Extract and handle the error reason
+      // console.log("Error reason:", error.reason);
+      return {
+        txHash: null,
+        txFee: null,
+      };
+    } else {
+      // If there's no specific reason provided, handle the error generally
+      // console.error(messageCode.msgFailedOpsAtBlockchain, error);
+      return {
+        txHash: null,
+        txFee: null,
+      };
+    }
+  }
+};
+
 const insertRoyaltyPassData = async (data) => {
   if (!data) {
     return false;
@@ -1398,6 +1575,8 @@ module.exports = {
   issueRoyaltyPass,
 
   issueDeliveryChallan,
+
+  addUserComment,
 
   verifyPocByID,
 

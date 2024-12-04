@@ -265,4 +265,6 @@ module.exports = {
     msgRoyaltyIssueUnsuccess: "Unable to issue Royalty pass, Plese check details and try again",
     msgDeliveryChallanSuccess: "Delivery challan issued successfully",
     msgDeliveryChallanUnsuccess: "Unable to issue Delivery challan, Plese check details and try again",
+    msgCommentAdded: "Comment added successfully",
+    msgCommentExisted: "Comment existed already"
 };
