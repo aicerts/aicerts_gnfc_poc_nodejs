@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const path = require("path");
+const multer = require('multer');
 const gnfcController = require('../controllers/gnfc');
 const validationRoute = require("../common/validationRoutes");
+
+const upload = multer({ dest: "./uploads/" });
 
 /**
  * @swagger
@@ -807,5 +811,80 @@ router.post('/poc-verify-id', gnfcController.verifyPocByID);
  */
 
 router.post('/poc-verify-url', gnfcController.verifyPocByIUrl);
+
+/**
+ * @swagger
+ * /api/poc-verify-batch:
+ *   post:
+ *     summary: Verify the batch of Royalty pass ID / Delivery challan ID in excel file.
+ *     description: API to Verify the batch of Royalty pass ID / Delivery challan ID in excel file. 
+ *     tags: [GNFC POC]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: PDF/Excel/csv file containing certificates to be verified.
+ *               column:
+ *                 type: number
+ *                 description: Specify the column position/index in Excel file (if any) of desired issues list (optional).
+ *             required:
+ *                - file
+ *           example:
+ *             status: "FAILED"
+ *             error: Internal Server Error
+ *     responses:
+ *       '200':
+ *         description: Certificate / Upload verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ *             example:
+ *               code: 200
+ *               status: "SUCCESS"
+ *               message: Verification result message.
+ *       '400':
+ *         description: Certificate is not valid or other error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *             example:
+ *               code: 400
+ *               status: "FAILED"
+ *               message: Certificate / upload is not valid or other error.
+ *       '500':
+ *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *             example:
+ *               code: 500
+ *               status: "FAILED"
+ *               message: Internal Server Error.
+ */
+
+router.post('/poc-verify-batch', upload.single("file"), gnfcController.verifyBatch);
+
 
 module.exports=router;

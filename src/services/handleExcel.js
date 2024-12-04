@@ -8,7 +8,6 @@ const {
   isCertificationIdExisted,
   wipeSourceFolder,
   generateCustomFolder,
-  verificationWithDatabase,
 } = require("../model/tasks"); // Importing functions from the '../model/tasks' module
 
 const {

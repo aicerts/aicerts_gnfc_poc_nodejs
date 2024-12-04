@@ -10,10 +10,10 @@ const { generateJwtToken } = require('../common/authUtils');
 
 // Import required modules
 const express = require('express');
-const app = express(); // Create an instance of the Express application
 const path = require('path');
 const fs = require('fs');
 const { ethers } = require('ethers'); // Ethereum JavaScript library
+const readXlsxFile = require("read-excel-file/node");
 
 const leaser_role = process.env.POC_LEASER_ROLE;
 const distributor_role = process.env.POC_DISTRIBUTOR_ROLE;
@@ -41,6 +41,7 @@ const {
   calculateHash,
   connectToPolygonPoc,
   generateAccount,
+  wipeSourceFile,
 } = require('../model/tasks'); // Importing functions from the '../model/tasks' module
 
 /**
@@ -915,7 +916,7 @@ const addUserComment = async (req, res) => {
     if (isRoyaltyPassIdExist) {
       if (!isRoyaltyPassIdExist.comment || isRoyaltyPassIdExist.comment == '') {
         var { txHash, txFee } = await addCommentWithRetry(requestId, comment);
-        if(!txHash){
+        if (!txHash) {
           return res.status(400).json({
             code: 400,
             status: 'FAILED',
@@ -941,7 +942,7 @@ const addUserComment = async (req, res) => {
     } else if (isDeliveryChallanExist) {
       if (!isDeliveryChallanExist.comment || isDeliveryChallanExist.comment == '') {
         var { txHash, txFee } = await addCommentWithRetry(requestId, comment);
-        if(!txHash){
+        if (!txHash) {
           return res.status(400).json({
             code: 400,
             status: 'FAILED',
@@ -980,7 +981,6 @@ const addUserComment = async (req, res) => {
     });
   }
 };
-
 
 /**
  * API call for verify Royalty pass ID / Delivery challan ID
@@ -1077,6 +1077,53 @@ const verifyPocByIUrl = async (req, res) => {
       code: 500,
       status: 'FAILED',
       message: messageCode.msgInternalError,
+    });
+  }
+};
+
+/**
+ * Verify batch with Excel - GNFC POC.
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+const verifyBatch = async (req, res) => {
+  // Extracting file path from the request
+  var file = req?.file.path;
+  let _columnIndex = parseInt(req.body.column) || 1;
+  const idIndex = _columnIndex > 0 ? _columnIndex - 1 : 0;
+  // Extract the file extension
+  const fileExtension = path.extname(req.file.originalname);
+  console.log("file path", req.file.originalname, idIndex);
+
+  const acceptableFormats = ['.xlsx'];
+
+  if (fileExtension != acceptableFormats[0]) {
+    await wipeSourceFile(req.file.path);
+    return res.status(400).json({
+      code: 400,
+      status: "FAILED",
+      message: messageCode.msgInvalidFileFormat
+    });
+  }
+  try{
+    const verificationResponse = await gnfcBatchExcel(req.file.path, idIndex);
+    await wipeSourceFile(req.file.path);
+
+    return res.status(200).json({
+      code: 200,
+      status: "SCCCESS",
+      message: messageCode.msgBatchVerification,
+      details: verificationResponse
+    });
+
+  } catch (error) {
+    await wipeSourceFile(req.file.path);
+    return res.status(500).json({
+      code: 500,
+      status: "FAILED",
+      message: messageCode.msgInternalError,
+      details: error
     });
   }
 };
@@ -1565,6 +1612,101 @@ const isGnfcIdExist = async (id) => {
   }
 };
 
+// Function to handle custom Batch Excel
+const gnfcBatchExcel = async (_path, _index) => {
+  const verificationStatus = [
+    "invalid",
+    "valid"
+  ];
+
+  if (!_path) {
+    return { status: "FAILED", response: false, message: "Failed to provide excel file" };
+  }
+  // api to fetch excel data into json
+  const newPath = path.join(..._path.split("\\"));
+  try {
+    // api to fetch excel data into json
+    const rows = await readXlsxFile(newPath);
+    const targetColumn = rows
+      .map(row => row[_index])
+      .filter(value => value !== null); // Remove null values
+
+    const allUndefined = targetColumn.every(item => item === undefined);
+    // console.log("Excel request: ", allUndefined, rows, targetColumn, targetColumn.length, _index);
+
+    if (allUndefined) {
+      return {
+        status: "FAILED",
+        response: false,
+        message: messageCode.msgNoIdsFound,
+      };
+    }
+
+    if (targetColumn.length > 1) {
+
+      // Batch Certification Formated Details
+      var notNullCertificationIDs = targetColumn.slice(1);
+
+
+      // Initialize an empty list to store matching IDs
+      const validChainResponse = [];
+      const validCertStatus = [];
+
+      // Assuming verify Issues is from blockchain
+      // for (const certId of notNullCertificationIDs) {
+      //   var validCertStatus = await verifySingleCertificationWithRetry(certId);
+      //   validChainResponse.push(validCertStatus);
+      // }
+
+      // Assuming Issues is your MongoDB model
+      for (const id of notNullCertificationIDs) {
+        let validStatus = await isGnfcIdExist(id);
+        var getResponse = (validStatus === false) ? 0 : 1;
+        validCertStatus.push(getResponse);
+      }
+
+      if (validCertStatus.length > 0) {
+
+        // Map the data2 values to the corresponding verificationStatus based on the index
+        const mergedStatus = notNullCertificationIDs.map((id, index) => {
+          const statusIndex = validCertStatus[index]; // Convert to 0-based index
+          const status = verificationStatus[statusIndex] || "NA"; // Handle out-of-range indices
+          return { id, status };
+        });
+
+        // console.log("The extracted data ", notNullCertificationIDs, validCertStatus, mergedStatus);
+        return {
+          status: "SUCCESS",
+          response: true,
+          message: messageCode.msgBatchVerification,
+          Details: mergedStatus
+        };
+
+      }
+      return {
+        status: "FAILED",
+        response: false,
+        message: messageCode.msgExcelHasExistingIds,
+        Details: [notNullCertificationIDs],
+      };
+    } else {
+      return {
+        status: "FAILED",
+        response: false,
+        message: messageCode.msgNoIdsFound,
+      };
+    }
+
+  } catch (error) {
+    console.error("Error fetching record:", error);
+    return {
+      status: "FAILED",
+      response: false,
+      message: messageCode.msgProvideValidExcel,
+    };
+  }
+};
+
 module.exports = {
   login,
 
@@ -1581,4 +1723,6 @@ module.exports = {
   verifyPocByID,
 
   verifyPocByIUrl,
+
+  verifyBatch,
 };
