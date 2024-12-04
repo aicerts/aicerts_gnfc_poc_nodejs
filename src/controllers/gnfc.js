@@ -578,6 +578,7 @@ const issueRoyaltyPass = async (req, res) => {
       fields?.vehicleNumber,
       fields?.weightBridgeName,
       fields?.destination,
+      fields?.address
     ];
 
     // Convert specific fields to strings

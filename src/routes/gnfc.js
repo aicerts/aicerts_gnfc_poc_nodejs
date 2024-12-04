@@ -93,7 +93,7 @@ router.post('/user-login', validationRoute.login , gnfcController.login);
  * /api/user-signup:
  *   post:
  *     summary: Create a new user account
- *     description: API to Create a new user account
+ *     description: API to Create a new user account Role (Admin / Leaser / Stockist), RoleId as unique ID
  *     tags: [GNFC POC]
  *     requestBody:
  *       required: true
