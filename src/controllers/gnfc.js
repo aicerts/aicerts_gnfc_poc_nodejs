@@ -1114,7 +1114,7 @@ const verifyBatch = async (req, res) => {
       code: 200,
       status: "SCCCESS",
       message: messageCode.msgBatchVerification,
-      details: verificationResponse
+      details: verificationResponse.Details
     });
 
   } catch (error) {
