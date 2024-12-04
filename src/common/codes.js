@@ -258,6 +258,7 @@ module.exports = {
     msgLoginUnsuccessful: "",
     msgOrderSuccessful: "",
     msgOrderUnsuccessful: "",
+    msgRoleIdExisted: "Role ID already existed, Please check and try again",
     msgUserApprovedSuccess: "Stakeholder Approved successfully",
     msgUserApprovedAlready: "Stakeholder Approved already",
     msgRoyaltyIssueSuccess: "Royalty pass issued successfully",

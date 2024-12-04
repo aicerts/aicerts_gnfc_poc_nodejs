@@ -74,6 +74,17 @@ const signup = async (req, res) => {
       dbStatus == true ? messageCode.msgDbReady : messageCode.msgDbNotReady;
     console.log(dbStatusMessage);
 
+    const roleIdExist = await Stakeholders.findOne({
+      roleId: roleId
+    }).select('-password');
+    if(roleIdExist){
+      res.json({
+        code: 400,
+        status: 'FAILED',
+        message: messageCode.msgRoleIdExisted,
+      });
+      return; // Stop execution if role ID already exists
+    }
     // Checking if Stakeholder already exists
     const existingUser = await Stakeholders.findOne({
       email: email,
