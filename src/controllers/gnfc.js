@@ -88,8 +88,7 @@ const signup = async (req, res) => {
     // Checking if Stakeholder already exists
     const existingUser = await Stakeholders.findOne({
       email: email,
-      role: role,
-      roleId: roleId
+      role: role
     }).select('-password');
 
     if (existingUser) {
