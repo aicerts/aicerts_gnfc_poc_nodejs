@@ -829,10 +829,10 @@ router.post('/poc-verify-url', gnfcController.verifyPocByIUrl);
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: PDF/Excel/csv file containing certificates to be verified.
+ *                 description: Excel containing IDs to be verified.
  *               column:
  *                 type: number
- *                 description: Specify the column position/index in Excel file (if any) of desired issues list (optional).
+ *                 description: Specify the column position/index in Excel file (if any) of desired IDs list (optional).
  *             required:
  *                - file
  *           example:
