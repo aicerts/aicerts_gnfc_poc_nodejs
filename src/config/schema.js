@@ -248,7 +248,7 @@ const LeaserSchema = new mongoose.Schema({
 // Schema for royalty pass (POC)
 const RoyaltyPassSchema = new mongoose.Schema({
   royaltyPassNo: { type: String, unique: true },
-  leaserId: { type: String, default: 'GNFCLEASER001' },
+  leaserId: { type: String },
   issuedDate: { type: Date, default: Date.now },
   leaseValidUpto: { type: Date },
   SSPNumber: { type: String },
