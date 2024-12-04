@@ -56,6 +56,7 @@ const { ensureAuthenticated } = require('../config/auth');
  */
 
 router.get('/leaser', gnfcController.leaserList);
+router.get('/stockist', gnfcController.stockistList);
 
 // /**
 //  * @swagger
@@ -114,12 +115,12 @@ router.get('/royalty-pass/:leaserId', gnfcController.royaltyPassList);
 
 // Delivery challan list based on royalty pass
 router.get(
-  '/delivery-challan/:royaltyPassNo',
+  '/delivery-challan/:stackHolderRoleId',
   gnfcController.deliveryChallanList
 );
 
 // Whole track record based on delivery challan
-router.get('/whole-record/:deliveryChallan', gnfcController.wholeTracker);
+// router.get('/whole-record/:deliveryChallan', gnfcController.wholeTracker);
 
 //Daily royalty pass issuance counter
 router.get('/daily-royalty-pass/report', gnfcController.royaltyPassDailyReport);
@@ -166,22 +167,22 @@ router.get(
   gnfcController.deliveryChallanAnnualReport
 );
 
-// To generate Royalty Pass PDF
-router.get(
-  '/verification-pdf/royalty-pass/:royaltyPassNo',
-  gnfcController.generateRoyaltyPassVerificationPDF
-);
+// // To generate Royalty Pass PDF
+// router.get(
+//   '/verification-pdf/royalty-pass/:royaltyPassNo',
+//   gnfcController.generateRoyaltyPassVerificationPDF
+// );
 
-// To generate Delivery challan PDF
-router.get(
-  '/verification-pdf/delivery-challan/:deliveryChallan',
-  gnfcController.generateDeliveryChallanVerificationPDF
-);
+// // To generate Delivery challan PDF
+// router.get(
+//   '/verification-pdf/delivery-challan/:deliveryChallan',
+//   gnfcController.generateDeliveryChallanVerificationPDF
+// );
 
-// To generate Whole record PDF based on delivery challan
-router.get(
-  '/verification-pdf/whole-record/:deliveryChallan',
-  gnfcController.generateWholeRecordVerificationPDF
-);
+// // To generate Whole record PDF based on delivery challan
+// router.get(
+//   '/verification-pdf/whole-record/:deliveryChallan',
+//   gnfcController.generateWholeRecordVerificationPDF
+// );
 
 module.exports = router;
