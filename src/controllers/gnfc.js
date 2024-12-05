@@ -819,12 +819,43 @@ const issueDeliveryChallan = async (req, res) => {
     console.log('The response', convertedInputs, additionalInputs);
 
     try {
-      var { txHash, txFee } = await issueDeliveryChallanWithRetry(
-        fields.deliveryNo,
-        convertedInputs,
-        additionalInputs,
-        combinedHash
-      );
+      try {
+        // Amoy contract address from environment variable
+        const abi = require('../config/pocAbi.json');
+        const rpcUrl = process.env.AMOY_ENDPOINT;
+        const contractAddress = process.env.POC_CONTRACT_ADDRESS;
+
+        const provider = new ethers.JsonRpcProvider(rpcUrl);
+
+        // Create a new ethers signer instance using the private key from environment variable and the provider(Fallback)
+        const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+
+        // Create a new ethers contract instance with a signing capability (using the contract Address, ABI and signer)
+        const smContract = new ethers.Contract(contractAddress, abi, signer);
+        // Issue Single Certifications on Blockchain
+        const tx = await smContract.createDeliveryChallan(
+          fields?.deliveryNo,
+          convertedInputs,
+          additionalInputs,
+          combinedHash
+        );
+
+        var txHash = tx.hash;
+      } catch (error) {
+        console.error('the error is', error);
+        return res.status(400).json({
+          code: 400,
+          status: 'FAILED',
+          message: error,
+        });
+      }
+
+      // var { txHash, txFee } = await issueDeliveryChallanWithRetry(
+      //   fields.deliveryNo,
+      //   convertedInputs,
+      //   additionalInputs,
+      //   combinedHash
+      // );
 
       if (!txHash) {
         return {
@@ -1397,21 +1428,21 @@ const issueDeliveryChallanWithRetry = async (
       );
     } else if (error.code === 'NONCE_EXPIRED') {
       // Extract and handle the error reason
-      // console.log("Error reason:", error.reason);
+      console.log("Error reason:", error.reason);
       return {
         txHash: null,
         txFee: null,
       };
     } else if (error.reason) {
       // Extract and handle the error reason
-      // console.log("Error reason:", error.reason);
+      console.log("Error reason:", error.reason);
       return {
         txHash: null,
         txFee: null,
       };
     } else {
       // If there's no specific reason provided, handle the error generally
-      // console.error(messageCode.msgFailedOpsAtBlockchain, error);
+      console.error(messageCode.msgFailedOpsAtBlockchain, error);
       return {
         txHash: null,
         txFee: null,
