@@ -1,0 +1,1069 @@
+[
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "admin",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "pauser",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AccessControlBadConfirmation",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "neededRole",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AccessControlUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EnforcedPause",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ExpectedPause",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "deliveryNo",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "royaltyPassNo",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "buyerId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "SSPNumber",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "surveyNo",
+          "type": "string"
+        }
+      ],
+      "name": "DeliveryChallanIssued",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Paused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "previousAdminRole",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "newAdminRole",
+          "type": "bytes32"
+        }
+      ],
+      "name": "RoleAdminChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "RoleGranted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "RoleRevoked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "royaltyPassId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "leaserId",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "issuedDate",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "leaseValidUpto",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "SSPNumber",
+          "type": "string"
+        }
+      ],
+      "name": "RoyaltyPassIssuedSummary",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Unpaused",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "DEFAULT_ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LEASER_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PAUSER_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "STOCKIST_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "deliveryNo",
+          "type": "string"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "deliveryNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "royaltyPassNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "SSPNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "surveyNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "buyerId",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "buyerName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "buyerAddress",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralGrade",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "initialQuantity",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "village",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "taluke",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "district",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pincode",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.BasicDeliveryDetails",
+          "name": "challanDetails",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "transportationMode",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "transportationDistance",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyStartDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyEndDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverLicenseNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleType",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleNumber",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.AdditionalDeliveryDetails",
+          "name": "transportDetails",
+          "type": "tuple"
+        },
+        {
+          "internalType": "string",
+          "name": "hash",
+          "type": "string"
+        }
+      ],
+      "name": "createDeliveryChallan",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "royaltyPassId",
+          "type": "string"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "royaltyPassNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "leaserId",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "issuedDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "leaseValidUpto",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "SSPNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "village",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "taluke",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "district",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralGrade",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.BasicRoyaltyDetails",
+          "name": "basic",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "initialQuantity",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyStartDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyEndDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "distance",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "duration",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverLicenseNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverMobileNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleType",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "weightBridgeName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "destination",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "location",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.AdditionalRoyaltyDetails",
+          "name": "additional",
+          "type": "tuple"
+        },
+        {
+          "internalType": "string",
+          "name": "hash",
+          "type": "string"
+        }
+      ],
+      "name": "createRoyaltyPass",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "issueNo",
+          "type": "string"
+        }
+      ],
+      "name": "getCommentToRoyaltypassOrDeliverychallan",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "deliveryNo",
+          "type": "string"
+        }
+      ],
+      "name": "getDeliveryChallanDetails",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "deliveryNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "royaltyPassNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "SSPNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "surveyNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "buyerId",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "buyerName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "buyerAddress",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralGrade",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "initialQuantity",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "village",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "taluke",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "district",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pincode",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.BasicDeliveryDetails",
+          "name": "challanDetails",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "transportationMode",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "transportationDistance",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyStartDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyEndDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverLicenseNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleType",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleNumber",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.AdditionalDeliveryDetails",
+          "name": "transportDetails",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "deliveryNo",
+          "type": "string"
+        }
+      ],
+      "name": "getDeliveryChallansForStockist",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getRoleAdmin",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "royaltyPassId",
+          "type": "string"
+        }
+      ],
+      "name": "getRoyaltyPassDetails",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "royaltyPassNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "leaserId",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "issuedDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "leaseValidUpto",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "SSPNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "village",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "taluke",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "district",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "mineralGrade",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.BasicRoyaltyDetails",
+          "name": "basic",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "initialQuantity",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyStartDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "journeyEndDate",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "distance",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "duration",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverLicenseNo",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "driverMobileNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleType",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "vehicleNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "weightBridgeName",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "destination",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "location",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct gnfcUpdatedContract.AdditionalRoyaltyDetails",
+          "name": "additional",
+          "type": "tuple"
+        },
+        {
+          "internalType": "string",
+          "name": "hash",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "leaserId",
+          "type": "string"
+        }
+      ],
+      "name": "getRoyaltyPassIdsByLeaser",
+      "outputs": [
+        {
+          "internalType": "string[]",
+          "name": "",
+          "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "grantRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "hasRole",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "callerConfirmation",
+          "type": "address"
+        }
+      ],
+      "name": "renounceRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "revokeRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "issueNo",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "comment",
+          "type": "string"
+        }
+      ],
+      "name": "setCommentToRoyaltypassOrDeliverychallan",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
+        }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unpause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
