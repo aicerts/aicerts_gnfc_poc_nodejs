@@ -318,12 +318,14 @@ const JGIssueSchema = new mongoose.Schema({
   transactionHash: { type: String, required: true }, // TransactionHash field is of type String and is required
   certificateHash: { type: String, required: true }, // CertificateHash field is of type String and is required
   enrollmentNumber: { type: String, required: true }, // EnrollmentNumber field is of type String and is required
-  serial: { type: String, required: true },
+  serial: { type: String, required: true, unique: true },
   name: { type: String }, // Name field is of type String and is required
   certificateStatus: { type: Number, required: true, default: 1 },
   certificateFields: { type: Object, required: true },
   issueDate: { type: Date, default: Date.now }, // issueDate field is of type Date and defaults to the current date/time
+  qrData: { type: String, default: "" },
   blockchain: { type: String },
+  verifyLink: { type: String, default: "" },
   url: { type: String, default: "" },
   type: { type: String, default: 'academic' }
 });

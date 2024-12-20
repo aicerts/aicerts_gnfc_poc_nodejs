@@ -15,9 +15,10 @@ const readXlsxFile = require("read-excel-file/node");
 const {
     isDBConnected, // Function to check if the database connection is established
     calculateHash,
-    connectToPolygonPoc,
     wipeSourceFile,
 } = require('../model/tasks'); // Importing functions from the '../model/tasks' module
+
+const { generateVibrantQr } = require('../utils/generateImage');
 
 // Define allowed Excel file extensions
 const allowedExtensions = ['.xls', '.xlsx'];
@@ -78,93 +79,76 @@ const jgIssuance = async (req, res) => {
         let filePath = req.file.path;
         // Fetch the records from the Excel file
         const excelData = await validateExcelFile(filePath);
+        await wipeSourceFile(req.file.path);
+        if (excelData.response === false) {
+            return res.status(400).json({
+                code: 400,
+                status: "FAILED",
+                message: excelData.message
+            });
+        }
         await _fs.remove(filePath);
 
-        const formattedData = JSON.stringify(Object.values(excelData.message)[1], null, 2)
-        console.log("The loop item: ", formattedData);
-        res.status(200).json({ code: 200, status: "SUCCESS", message: "Reached", details: excelData.message[2] });
-        await wipeSourceFile(req.file.path);
-        return;
+        const targetData = excelData.message[0];
+        const targetMetaData = excelData.message[1];
+        const targetList = excelData.message[2];
 
         try {
-            // Check mongoose connection
-            await isDBConnected();
-            let certificatesCount = excelData.message[2].length;
+            let certificatesCount = targetList.length;
             let batchDetails = [];
             var batchDetailsWithQR = [];
             let insertPromises = []; // Array to hold all insert promises
 
             for (let i = 0; i < certificatesCount; i++) {
+                let today = new Date();
+                let todayString = today.getTime().toString(); // Convert epoch time to string
+                var serialId = 'SL' + todayString.slice(-10);
+                var jgTargetData = JSON.stringify(Object.values(targetData)[i], null, 2);
+                var jgMetaData = JSON.stringify(Object.values(targetMetaData)[i]);
+                var jgData = Object.values(targetData)[i]; // Get the object directly
+                // console.log("The loop item: ", jgData.Name);
+                // return res.status(200).json({ code: 200, status: "SUCCESS", message: "Reached", details: excelData.message[2] });
+                // try {
+                //     // Issue Single Certifications on Blockchain
+                //     const tx = await jgContract.issueCertificate(
+                //         enrollmentId,
+                //         hash,
+                //         data
+                //     );
 
-                console.log("The loop item: ", JSON.stringify(Object.values(mergedResult)[item], null, 2));
-                try {
-                    // Issue Single Certifications on Blockchain
-                    const tx = await jgContract.issueCertificate(
-                        enrollmentId,
-                        hash,
-                        data
-                    );
+                //     var txHash = tx.hash;
+                // } catch (error) {
+                //     console.error('the error is', error);
+                //     return res.status(400).json({
+                //         code: 400,
+                //         status: 'FAILED',
+                //         message: messageCode.msgFailedOpsAtBlockchain,
+                //     });
+                // }
 
-                    var txHash = tx.hash;
-                    var blockchain = `https://${process.env.JG_NETWORK}/tx/${txHash}`;
-                } catch (error) {
-                    console.error('the error is', error);
-                    return res.status(400).json({
-                        code: 400,
-                        status: 'FAILED',
-                        message: messageCode.msgFailedOpsAtBlockchain,
-                    });
-                }
-
-               batchDetails[i] = {
-                    issuerId: idExist.issuerId,
-                    batchId: allocateBatchId,
-                    proofHash: _proof,
-                    encodedProof: `0x${_proofHash}`,
-                    transactionHash: txHash,
-                    certificateHash: hashedBatchData[i],
-                    certificateNumber: rawBatchData[i].certificationID,
-                    name: rawBatchData[i].name,
-                    course: rawBatchData[i].certificationName,
-                    grantDate: _grantDate,
-                    expirationDate: _expirationDate,
-                    email: email,
-                    certStatus: 1,
-                    positionX: qrXPosition,
-                    positionY: qrYPosition,
-                    qrSize: staticQrSize,
-                    width: withoutPdfWidth,
-                    height: withoutPdfHeight,
-                    qrOption: qrOption,
-                    blockchainOption: blockchainPreference
-                }
+                var txHash = "0x8f8951d86a04620133abb38c1802c72bbd5d5266632717a945d2309a1356ee1c";
+                var blockchain = `https://${process.env.JG_NETWORK}/tx/${txHash}`;
 
                 let _fields = {
-                    Certificate_Number: rawBatchData[i].certificationID,
-                    name: rawBatchData[i].name,
-                    courseName: rawBatchData[i].certificationName,
-                    Grant_Date: _grantDate,
-                    Expiration_Date: _expirationDate,
-                    polygonLink
+                    enrollmentNumber: targetList[i],
+                    serial: serialId,
+                    name: jgData.Name,
+                    transactioHash: txHash, // This should be generated or provided
+                    issuer: "www.jgu.certs365.io",
+                    issuerId: issuerExist.issuerId,
+                    blockchain: blockchain
                 }
 
-                let encryptLink = await generateEncryptedUrl(_fields);
-                let modifiedUrl = false;
-
-                if (encryptLink) {
-                    let _dbStatus = await isDBConnected();
-                    if (_dbStatus) {
-                        let urlData = {
-                            email: email,
-                            certificateNumber: rawBatchData[i].certificationID,
-                            url: encryptLink
-                        }
-                    }
+                // Hash sensitive fields
+                const hashedFields = {};
+                for (const field in _fields) {
+                    hashedFields[field] = calculateHash(_fields[field]);
                 }
+                const combinedHash = calculateHash(JSON.stringify(hashedFields));
 
-                modifiedUrl = process.env.SHORT_URL + rawBatchData[i].certificationID;
+                let modifiedUrl = process.env.JG_SHORT_URL + targetList[i];
 
-                let _qrCodeData = modifiedUrl !== false ? modifiedUrl : encryptLink;
+                let _qrCodeData = modifiedUrl;
 
                 // Generate vibrant QR
                 const generateQr = await generateVibrantQr(_qrCodeData, 450, qrOption);
@@ -178,42 +162,46 @@ const jgIssuance = async (req, res) => {
                 }
 
                 var qrImageData = generateQr ? generateQr : qrCodeImage;
-
+                
                 batchDetailsWithQR[i] = {
-                    issuerId: idExist.issuerId,
-                    batchId: allocateBatchId,
+                    issuerId: issuerExist?.issuerId,
+                    issuer: _fields.issuer,
                     transactionHash: txHash,
-                    certificateHash: hashedBatchData[i],
-                    certificateNumber: rawBatchData[i].certificationID,
-                    name: rawBatchData[i].name,
-                    course: rawBatchData[i].certificationName,
-                    grantDate: _grantDate,
-                    expirationDate: _expirationDate,
-                    qrImage: qrImageData,
-                    width: withoutPdfWidth,
-                    height: withoutPdfHeight
+                    certificateHash: combinedHash,
+                    enrollmentNumber: _fields.enrollmentNumber,
+                    serial: serialId,
+                    name: _fields.name,
+                    verifyLink: modifiedUrl,
+                    qrData: qrImageData,
+                    blockchain: blockchain
                 }
 
-                insertPromises.push(insertBatchCertificateData(batchDetails[i]));
+                batchDetails[i] = {
+                    issuerId: issuerExist?.issuerId,
+                    issuer: _fields.issuer,
+                    transactionHash: txHash,
+                    certificateHash: combinedHash,
+                    enrollmentNumber: _fields.enrollmentNumber,
+                    serial: serialId,
+                    name: _fields.name,
+                    certificateStatus: 1,
+                    certificateFields: jgMetaData,
+                    verifyLink: modifiedUrl,
+                    qrData: qrImageData,
+                    blockchain: blockchain
+                }
+
+                insertPromises.push(insertJGIssuanceData(batchDetails[i]));
             }
             // Wait for all insert promises to resolve
             await Promise.all(insertPromises);
-            let newCount = certificatesCount;
-            let oldCount = idExist.certificatesIssued;
-            idExist.certificatesIssued = newCount + oldCount;
-            // If user with given id exists, update certificatesIssued transation fee
-            const previousrtransactionFee = idExist.transactionFee || 0; // Initialize to 0 if transactionFee field doesn't exist
-            idExist.transactionFee = previousrtransactionFee + txFee;
-            await idExist.save();
-
-            // Update Issuer credits limit (decrease by 1)
-            await updateIssuerServiceCredits(existIssuerId, 'issue');
 
             res.status(200).json({
                 code: 200,
                 status: "SUCCESS",
                 message: messageCode.msgBatchIssuedSuccess,
                 details: batchDetailsWithQR,
+                data: targetData,
             });
 
             await wipeSourceFile(req.file.path);
@@ -434,7 +422,7 @@ const validateExcelFile = async (_path) => {
 
             const extractedValues = await extractValues(mergedResult);
 
-            console.log("Reached", extractedValues);
+            // console.log("Reached", extractedValues);
             // Output the transformed data
             const jsonResponse = JSON.stringify(mergedResult, null, 2);
             // for (var item = 0; item < uniqueEnrollmentNumbers.length; item++) {
@@ -547,16 +535,9 @@ function mergeResponses(response1, response2) {
 
     for (const enrollmentNo in response1) {
         const student1 = response1[enrollmentNo];
-        const student2 = response2[enrollmentNo];
+        const semester = response2[enrollmentNo];
 
         mergedData[enrollmentNo] = {
-            Serial: "SN121323", // You may want to generate this dynamically
-            IssueDate: new Date().toISOString(),
-            transactioHash: "abc232139233bacd", // This should be generated or provided
-            issuer: "jgu.certs365.io",
-            issuerId: "0xabc231321638253cde",
-            blockchain: "www.polygon.com/tx/abc232139233bacd",
-            QRCode: "base64code for the QR", // This should be generated
             Name: student1.Name,
             EnrollmentNo: student1.EnrollmentNo,
             Programme: student1.Programme, // This was missing in both responses, you may need to add it
@@ -575,11 +556,11 @@ function mergeResponses(response1, response2) {
         };
 
         // Add semester records
-        for (const sem in student2) {
+        for (const sem in semester) {
             if (sem.startsWith("Semester")) {
-                const semData = student2[sem];
+                const semData = semester[sem];
                 mergedData[enrollmentNo].SemesterRecords.push({
-                    Semester: sem.replace("Semester", ""),
+                    Semester: sem.replace("Semester", "Semester "),
                     Credit: semData.Credit,
                     GP: semData.GP,
                     SGPA: semData.SGPA,
@@ -658,32 +639,35 @@ const enrollmentNumbersCompare = async (arr1, arr2) => {
     return arr1.every((value, index) => value === arr2[index]);
 };
 
-const insertDeliveryChallanData = async (data) => {
+const insertJGIssuanceData = async (data) => {
     if (!data) {
-      return false;
+        return false;
     }
     try {
-      // Create a new Issues document with the provided data
-      const newDeliveryChallan = new JGIssue({
-        deliveryNo: data?.deliveryNo,
-        royaltyPassNo: data?.royaltyPassNo,
-        SSPNumber: data?.SSPNumber,
-        surveyNo: data?.surveyNo,
-        buyerId: data?.buyerId,
-        buyerName: data?.buyerName,
-        buyerAddress: data?.buyerAddress,
-        qrData: data?.qrData,
-        issueDate: new Date(),
-      });
-      // Save the new Issues document to the database
-      const result = await newDeliveryChallan.save();
-      return result;
+        // Create a new Issues document with the provided data
+        const newJGIssue = new JGIssue({
+            issuerId: data?.issuerId,
+            issuer: data?.issuer,
+            transactionHash: data?.transactionHash,
+            certificateHash: data?.certificateHash,
+            enrollmentNumber: data?.enrollmentNumber,
+            serial: data?.serial,
+            name: data?.name,
+            certificateStatus: data?.certificateStatus,
+            certificateFields: data?.certificateFields,
+            verifyLink: data?.verifyLink,
+            qrData: data?.qrData,
+            blockchain: data?.blockchain
+        });
+        // Save the new Issues document to the database
+        const result = await newJGIssue.save();
+        return true;
     } catch (error) {
-      // Handle errors related to database connection or insertion
-      console.error('Error connecting to MongoDB:', error);
-      return false;
+        // Handle errors related to database connection or insertion
+        console.error('Error connecting to MongoDB:', error);
+        return false;
     }
-  };
+};
 
 module.exports = {
     // Function to issue an Academic certificate
