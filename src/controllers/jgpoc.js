@@ -103,9 +103,10 @@ const jgIssuance = async (req, res) => {
                 let today = new Date();
                 let todayString = today.getTime().toString(); // Convert epoch time to string
                 var serialId = 'SL' + todayString.slice(-10);
-                var jgMetaData = JSON.stringify(Object.values(targetMetaData)[i]);
+                var jgMetaData = Object.values(targetMetaData)[i];
                 var jgData = Object.values(targetData)[i]; // Get the object directly
-                
+                 // console.log("the data response", jgMetaData);
+
                 let _fields = {
                     enrollmentNumber: targetList[i],
                     serial: serialId,
@@ -123,11 +124,10 @@ const jgIssuance = async (req, res) => {
 
                  try {
                     console.log("Contract inputs: ", jgMetaData);
-                    // Issue Single Certifications on Blockchain
                     const tx = await jgContract.issueCertificate(
-                        "12346",
+                        targetList[i],
                         combinedHash,
-                        ["name","25","sandeep"]
+                        jgMetaData
                     );
 
                     var txHash = tx.hash;
@@ -139,9 +139,6 @@ const jgIssuance = async (req, res) => {
                         message: messageCode.msgFailedOpsAtBlockchain,
                     });
                 }
-                // const tx = await jgContract.getAcademicRecord("1234");
-
-                // console.log("the contract response", tx);
 
                 // var txHash = "0x8f8951d86a04620133abb38c1802c72bbd5d5266632717a945d2309a1356ee1c";
                 var blockchain = `https://${process.env.JG_NETWORK}/tx/${txHash}`;
