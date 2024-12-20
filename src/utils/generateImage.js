@@ -56,6 +56,7 @@ const getOption = async (url, qrSide, code) => {
                 height: qrSide,
                 data: url,
                 margin: 1,
+                image: logoUrl,
                 qrOptions: {
                     typeNumber: "0",
                     mode: "Byte",
@@ -67,6 +68,10 @@ const getOption = async (url, qrSide, code) => {
                 },
                 backgroundOptions: {
                     color: "#ffffff",
+                },
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 0
                 },
                 cornersSquareOptions: {
                     color: "#000000",

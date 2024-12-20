@@ -266,5 +266,13 @@ module.exports = {
     msgDeliveryChallanSuccess: "Delivery challan issued successfully",
     msgDeliveryChallanUnsuccess: "Unable to issue Delivery challan, Plese check details and try again",
     msgCommentAdded: "Comment added successfully",
-    msgCommentExisted: "Comment existed already"
+    msgCommentExisted: "Comment existed already",
+
+    // JG POC
+    msgInvalidEnrollId: "Entered Invalid Enrollment ID",
+    msgEnrollIdExisted: "Enrollment ID(s) already existed",
+    msgEnrollIdNotExist: "Enrollment ID(s) not found",
+    msgExcelHasExistingSemIds: "Excel file has Existing Semester Enrollment IDs",
+    msgIdsNotMatched: "The Subjects and Semester Enrollment IDs in the Excel file do not match",
+
 };

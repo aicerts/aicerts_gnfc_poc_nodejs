@@ -10,6 +10,7 @@ let blockchain = require("./blockchain");
 let gnfc = require("./gnfc");
 let gnfcFetch = require("./gnfcFetch");
 let health = require("./health");
+let jgpoc = require("./jgpoc");
 
 
 router.use(issues);
@@ -21,5 +22,6 @@ router.use(blockchain);
 router.use(gnfc);
 router.use(gnfcFetch);
 router.use(health);
+router.use(jgpoc);
 
 module.exports = router

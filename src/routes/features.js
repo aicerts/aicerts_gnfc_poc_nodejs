@@ -694,409 +694,409 @@ router.post('/convert-excel', upload.single("file"), adminController.convertInto
  */
 router.post('/generate-excel-report', adminController.generateExcelReport);
 
-/**
- * @swagger
- * /api/upload-badge:
- *   post:
- *     summary: Upload badge details
- *     description: API to upload badge details and get upload success message as response.
- *     tags: [Issue Badge]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 description: Provide email 
- *               badgeCode:
- *                 type: string
- *                 description: Provide the Badge code  
- *               badgeTitle:
- *                 type: string
- *                 description: Provide the Badge title  
- *               badgeImage:
- *                 type: string
- *                 description: Provide the Badge Image url link
- *               badgeDescription:
- *                 type: string
- *                 description: Provide the Badge description
- *               badgeCriteria:
- *                 type: [string]
- *                 description: Provide the Badge criteria in array of strings
- *             required:
- *               - email
- *               - badgeCode
- *               - badgeTitle
- *               - badgeImage
- *               - badgeDescription
- *               - badgeCriteria
- *     responses:
- *       '200':
- *         description: Issue upload Batch details successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: SUCCESS
- *                 message:
- *                   type: string
- *                   example: Badge uploaded successfully
- *                 details:
- *                   type: array
- *                   items:
- *                     [Issuers Log Details]
- *       '400':
- *         description: Bad request or Invalid code
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   type: string
- *                   example: Bad request!
- *             example:
- *               code: 400.
- *               status: "FAILED"
- *               message: Error message for Badge upload.
- *       '422':
- *         description: User given invalid input (Unprocessable Entity)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *             example:
- *               code: 422.
- *               status: "FAILED"
- *               message: Error message for invalid input.
- *       '500':
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   code: 500.
- *                   type: string
- *                   example: An error occurred while issue Badge
- */
-router.post('/upload-badge', adminController.uploadBadge);
+// /**
+//  * @swagger
+//  * /api/upload-badge:
+//  *   post:
+//  *     summary: Upload badge details
+//  *     description: API to upload badge details and get upload success message as response.
+//  *     tags: [Issue Badge]
+//  *     security:
+//  *       - BearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               email:
+//  *                 type: string
+//  *                 description: Provide email 
+//  *               badgeCode:
+//  *                 type: string
+//  *                 description: Provide the Badge code  
+//  *               badgeTitle:
+//  *                 type: string
+//  *                 description: Provide the Badge title  
+//  *               badgeImage:
+//  *                 type: string
+//  *                 description: Provide the Badge Image url link
+//  *               badgeDescription:
+//  *                 type: string
+//  *                 description: Provide the Badge description
+//  *               badgeCriteria:
+//  *                 type: [string]
+//  *                 description: Provide the Badge criteria in array of strings
+//  *             required:
+//  *               - email
+//  *               - badgeCode
+//  *               - badgeTitle
+//  *               - badgeImage
+//  *               - badgeDescription
+//  *               - badgeCriteria
+//  *     responses:
+//  *       '200':
+//  *         description: Issue upload Batch details successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: SUCCESS
+//  *                 message:
+//  *                   type: string
+//  *                   example: Badge uploaded successfully
+//  *                 details:
+//  *                   type: array
+//  *                   items:
+//  *                     [Issuers Log Details]
+//  *       '400':
+//  *         description: Bad request or Invalid code
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   type: string
+//  *                   example: Bad request!
+//  *             example:
+//  *               code: 400.
+//  *               status: "FAILED"
+//  *               message: Error message for Badge upload.
+//  *       '422':
+//  *         description: User given invalid input (Unprocessable Entity)
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                 message:
+//  *                   type: string
+//  *             example:
+//  *               code: 422.
+//  *               status: "FAILED"
+//  *               message: Error message for invalid input.
+//  *       '500':
+//  *         description: Internal server error
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   code: 500.
+//  *                   type: string
+//  *                   example: An error occurred while issue Badge
+//  */
+// router.post('/upload-badge', adminController.uploadBadge);
 
-/**
- * @swagger
- * /api/get-badges:
- *   post:
- *     summary: Get badges details
- *     description: API to Get badges details by providing issuer email and badge code (optional) success message as response.
- *     tags: [Issue Badge]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 description: Provide email 
- *               badgeCode:
- *                 type: string
- *                 description: Provide the Badge code  
- *             required:
- *               - email
- *     responses:
- *       '200':
- *         description: Get Batch details successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: SUCCESS
- *                 message:
- *                   type: string
- *                   example: Match results found
- *                 details:
- *                   type: array
- *                   items:
- *                     [Issuers Log Details]
- *       '400':
- *         description: Bad request or Invalid code
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   type: string
- *                   example: Bad request!
- *             example:
- *               code: 400.
- *               status: "FAILED"
- *               message: Error message for Badge results found.
- *       '422':
- *         description: User given invalid input (Unprocessable Entity)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *             example:
- *               code: 422.
- *               status: "FAILED"
- *               message: Error message for invalid input.
- *       '500':
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   code: 500.
- *                   type: string
- *                   example: An error occurred while issue Badge
- */
-router.post('/get-badges', adminController.getBadges);
+// /**
+//  * @swagger
+//  * /api/get-badges:
+//  *   post:
+//  *     summary: Get badges details
+//  *     description: API to Get badges details by providing issuer email and badge code (optional) success message as response.
+//  *     tags: [Issue Badge]
+//  *     security:
+//  *       - BearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               email:
+//  *                 type: string
+//  *                 description: Provide email 
+//  *               badgeCode:
+//  *                 type: string
+//  *                 description: Provide the Badge code  
+//  *             required:
+//  *               - email
+//  *     responses:
+//  *       '200':
+//  *         description: Get Batch details successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: SUCCESS
+//  *                 message:
+//  *                   type: string
+//  *                   example: Match results found
+//  *                 details:
+//  *                   type: array
+//  *                   items:
+//  *                     [Issuers Log Details]
+//  *       '400':
+//  *         description: Bad request or Invalid code
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   type: string
+//  *                   example: Bad request!
+//  *             example:
+//  *               code: 400.
+//  *               status: "FAILED"
+//  *               message: Error message for Badge results found.
+//  *       '422':
+//  *         description: User given invalid input (Unprocessable Entity)
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                 message:
+//  *                   type: string
+//  *             example:
+//  *               code: 422.
+//  *               status: "FAILED"
+//  *               message: Error message for invalid input.
+//  *       '500':
+//  *         description: Internal server error
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   code: 500.
+//  *                   type: string
+//  *                   example: An error occurred while issue Badge
+//  */
+// router.post('/get-badges', adminController.getBadges);
 
-/**
- * @swagger
- * /api/delete-badge:
- *   delete:
- *     summary: Delete badge details
- *     description: API to Delete badge details and get delete success message as response.
- *     tags: [Issue Badge]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 description: Provide email 
- *               badgeCode:
- *                 type: string
- *                 description: Provide the Badge code  
- *             required:
- *               - email
- *               - badgeCode
- *     responses:
- *       '200':
- *         description: Delete Batch details successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: SUCCESS
- *                 message:
- *                   type: string
- *                   example: Badge deleted successfully
- *                 details:
- *                   type: array
- *                   items:
- *                     [Issuers Log Details]
- *       '400':
- *         description: Bad request or Invalid code
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   type: string
- *                   example: Bad request!
- *             example:
- *               code: 400.
- *               status: "FAILED"
- *               message: Error message for Badge upload.
- *       '422':
- *         description: User given invalid input (Unprocessable Entity)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *             example:
- *               code: 422.
- *               status: "FAILED"
- *               message: Error message for invalid input.
- *       '500':
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   code: 500.
- *                   type: string
- *                   example: An error occurred while issue Badge
- */
-router.delete('/delete-badge', adminController.deleteBadge);
+// /**
+//  * @swagger
+//  * /api/delete-badge:
+//  *   delete:
+//  *     summary: Delete badge details
+//  *     description: API to Delete badge details and get delete success message as response.
+//  *     tags: [Issue Badge]
+//  *     security:
+//  *       - BearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               email:
+//  *                 type: string
+//  *                 description: Provide email 
+//  *               badgeCode:
+//  *                 type: string
+//  *                 description: Provide the Badge code  
+//  *             required:
+//  *               - email
+//  *               - badgeCode
+//  *     responses:
+//  *       '200':
+//  *         description: Delete Batch details successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: SUCCESS
+//  *                 message:
+//  *                   type: string
+//  *                   example: Badge deleted successfully
+//  *                 details:
+//  *                   type: array
+//  *                   items:
+//  *                     [Issuers Log Details]
+//  *       '400':
+//  *         description: Bad request or Invalid code
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   type: string
+//  *                   example: Bad request!
+//  *             example:
+//  *               code: 400.
+//  *               status: "FAILED"
+//  *               message: Error message for Badge upload.
+//  *       '422':
+//  *         description: User given invalid input (Unprocessable Entity)
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                 message:
+//  *                   type: string
+//  *             example:
+//  *               code: 422.
+//  *               status: "FAILED"
+//  *               message: Error message for invalid input.
+//  *       '500':
+//  *         description: Internal server error
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   code: 500.
+//  *                   type: string
+//  *                   example: An error occurred while issue Badge
+//  */
+// router.delete('/delete-badge', adminController.deleteBadge);
 
-/**
- * @swagger
- * /api/generate-badge:
- *   post:
- *     summary: To perform an Issue with Badge details
- *     description: API to issue certificate with Badge included with it and provide combined details as response.
- *     tags: [Issue Badge]
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 description: Provide email 
- *               badgeCode:
- *                 type: string
- *                 description: Provide the available badge code (valid)
- *               certificateNumber:
- *                 type: string
- *                 description: Provide the certification number  
- *               name:
- *                 type: string
- *                 description: Provide the certification holder name  
- *               course:
- *                 type: string
- *                 description: Provide the certification course
- *               hash:
- *                 type: string
- *                 description: Provide the certification transaction hash
- *               grantDate:
- *                 type: string
- *                 description: Provide the certificate grant date
- *               expirationDate:
- *                 type: string
- *                 description: Provide the certificate expiration date
- *             required:
- *               - email
- *               - badgeCode
- *               - certificateNumber
- *               - name
- *               - course
- *               - hash
- *     responses:
- *       '200':
- *         description: Issue allocated with Batch successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: SUCCESS
- *                 message:
- *                   type: string
- *                   example: Badge issued successfully
- *                 details:
- *                   type: array
- *                   items:
- *                     [Issuers Log Details]
- *       '400':
- *         description: Bad request or Invalid code
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   type: string
- *                   example: Issues details not found (or) Bad request!
- *             example:
- *               code: 400.
- *               status: "FAILED"
- *               message: Error message for Badge issue.
- *       '422':
- *         description: User given invalid input (Unprocessable Entity)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *             example:
- *               code: 422.
- *               status: "FAILED"
- *               message: Error message for invalid input.
- *       '500':
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: FAILED
- *                 message:
- *                   code: 500.
- *                   type: string
- *                   example: An error occurred while issue Badge
- */
-router.post('/generate-badge', adminController.generateBadgeOnIssue);
+// /**
+//  * @swagger
+//  * /api/generate-badge:
+//  *   post:
+//  *     summary: To perform an Issue with Badge details
+//  *     description: API to issue certificate with Badge included with it and provide combined details as response.
+//  *     tags: [Issue Badge]
+//  *     security:
+//  *       - BearerAuth: []
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               email:
+//  *                 type: string
+//  *                 description: Provide email 
+//  *               badgeCode:
+//  *                 type: string
+//  *                 description: Provide the available badge code (valid)
+//  *               certificateNumber:
+//  *                 type: string
+//  *                 description: Provide the certification number  
+//  *               name:
+//  *                 type: string
+//  *                 description: Provide the certification holder name  
+//  *               course:
+//  *                 type: string
+//  *                 description: Provide the certification course
+//  *               hash:
+//  *                 type: string
+//  *                 description: Provide the certification transaction hash
+//  *               grantDate:
+//  *                 type: string
+//  *                 description: Provide the certificate grant date
+//  *               expirationDate:
+//  *                 type: string
+//  *                 description: Provide the certificate expiration date
+//  *             required:
+//  *               - email
+//  *               - badgeCode
+//  *               - certificateNumber
+//  *               - name
+//  *               - course
+//  *               - hash
+//  *     responses:
+//  *       '200':
+//  *         description: Issue allocated with Batch successfully
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: SUCCESS
+//  *                 message:
+//  *                   type: string
+//  *                   example: Badge issued successfully
+//  *                 details:
+//  *                   type: array
+//  *                   items:
+//  *                     [Issuers Log Details]
+//  *       '400':
+//  *         description: Bad request or Invalid code
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   type: string
+//  *                   example: Issues details not found (or) Bad request!
+//  *             example:
+//  *               code: 400.
+//  *               status: "FAILED"
+//  *               message: Error message for Badge issue.
+//  *       '422':
+//  *         description: User given invalid input (Unprocessable Entity)
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                 message:
+//  *                   type: string
+//  *             example:
+//  *               code: 422.
+//  *               status: "FAILED"
+//  *               message: Error message for invalid input.
+//  *       '500':
+//  *         description: Internal server error
+//  *         content:
+//  *           application/json:
+//  *             schema:
+//  *               type: object
+//  *               properties:
+//  *                 status:
+//  *                   type: string
+//  *                   example: FAILED
+//  *                 message:
+//  *                   code: 500.
+//  *                   type: string
+//  *                   example: An error occurred while issue Badge
+//  */
+// router.post('/generate-badge', adminController.generateBadgeOnIssue);
 
 module.exports=router;

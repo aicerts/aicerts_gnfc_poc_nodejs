@@ -66,7 +66,7 @@ process.on('uncaughtException', (error) => {
   process.exit(1); // Exit the process with a failure code
 });
 
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Start the server
 const server = app.listen(port, () => {
