@@ -103,40 +103,15 @@ const jgIssuance = async (req, res) => {
                 let today = new Date();
                 let todayString = today.getTime().toString(); // Convert epoch time to string
                 var serialId = 'SL' + todayString.slice(-10);
-                var jgTargetData = JSON.stringify(Object.values(targetData)[i], null, 2);
                 var jgMetaData = JSON.stringify(Object.values(targetMetaData)[i]);
                 var jgData = Object.values(targetData)[i]; // Get the object directly
-                // console.log("The loop item: ", jgData.Name);
-                // return res.status(200).json({ code: 200, status: "SUCCESS", message: "Reached", details: excelData.message[2] });
-                // try {
-                //     // Issue Single Certifications on Blockchain
-                //     const tx = await jgContract.issueCertificate(
-                //         enrollmentId,
-                //         hash,
-                //         data
-                //     );
-
-                //     var txHash = tx.hash;
-                // } catch (error) {
-                //     console.error('the error is', error);
-                //     return res.status(400).json({
-                //         code: 400,
-                //         status: 'FAILED',
-                //         message: messageCode.msgFailedOpsAtBlockchain,
-                //     });
-                // }
-
-                var txHash = "0x8f8951d86a04620133abb38c1802c72bbd5d5266632717a945d2309a1356ee1c";
-                var blockchain = `https://${process.env.JG_NETWORK}/tx/${txHash}`;
-
+                
                 let _fields = {
                     enrollmentNumber: targetList[i],
                     serial: serialId,
                     name: jgData.Name,
-                    transactioHash: txHash, // This should be generated or provided
                     issuer: "www.jgu.certs365.io",
-                    issuerId: issuerExist.issuerId,
-                    blockchain: blockchain
+                    issuerId: issuerExist.issuerId
                 }
 
                 // Hash sensitive fields
@@ -145,6 +120,31 @@ const jgIssuance = async (req, res) => {
                     hashedFields[field] = calculateHash(_fields[field]);
                 }
                 const combinedHash = calculateHash(JSON.stringify(hashedFields));
+
+                 try {
+                    console.log("Contract inputs: ", jgMetaData);
+                    // Issue Single Certifications on Blockchain
+                    const tx = await jgContract.issueCertificate(
+                        "12346",
+                        combinedHash,
+                        ["name","25","sandeep"]
+                    );
+
+                    var txHash = tx.hash;
+                } catch (error) {
+                    console.error('the error is', error);
+                    return res.status(400).json({
+                        code: 400,
+                        status: 'FAILED',
+                        message: messageCode.msgFailedOpsAtBlockchain,
+                    });
+                }
+                // const tx = await jgContract.getAcademicRecord("1234");
+
+                // console.log("the contract response", tx);
+
+                // var txHash = "0x8f8951d86a04620133abb38c1802c72bbd5d5266632717a945d2309a1356ee1c";
+                var blockchain = `https://${process.env.JG_NETWORK}/tx/${txHash}`;
 
                 let modifiedUrl = process.env.JG_SHORT_URL + targetList[i];
 
@@ -187,7 +187,6 @@ const jgIssuance = async (req, res) => {
                     certificateStatus: 1,
                     certificateFields: jgMetaData,
                     verifyLink: modifiedUrl,
-                    qrData: qrImageData,
                     blockchain: blockchain
                 }
 
@@ -656,7 +655,6 @@ const insertJGIssuanceData = async (data) => {
             certificateStatus: data?.certificateStatus,
             certificateFields: data?.certificateFields,
             verifyLink: data?.verifyLink,
-            qrData: data?.qrData,
             blockchain: data?.blockchain
         });
         // Save the new Issues document to the database

@@ -323,7 +323,6 @@ const JGIssueSchema = new mongoose.Schema({
   certificateStatus: { type: Number, required: true, default: 1 },
   certificateFields: { type: Object, required: true },
   issueDate: { type: Date, default: Date.now }, // issueDate field is of type Date and defaults to the current date/time
-  qrData: { type: String, default: "" },
   blockchain: { type: String },
   verifyLink: { type: String, default: "" },
   url: { type: String, default: "" },
